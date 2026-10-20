@@ -1,0 +1,9 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/shared" },
+    { "path": "packages/pendulum" },
+    { "path": "packages/gateway" },
+    { "path": "packages/ui" }
+  ]
+}
