@@ -10,7 +10,8 @@
     "lint:proto": "buf lint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc -b"
+    "typecheck": "tsc -b",
+    "dev:redis": "docker compose -f compose.yaml -f compose.dev.yaml up -d redis"
   },
   "devDependencies": {
     "@bufbuild/buf": "^1.74.0",

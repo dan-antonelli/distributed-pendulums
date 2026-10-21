@@ -1,0 +1,6 @@
+# Development only: publishes Redis so servers started with npm on the host can reach it.
+# Used by: npm run dev:redis
+services:
+  redis:
+    ports:
+      - "6379:6379"

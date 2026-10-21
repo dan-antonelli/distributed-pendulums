@@ -1,0 +1,2 @@
+# LF everywhere, so a Windows checkout can't break files that run inside Linux containers (DECISIONS D25).
+* text=auto eol=lf

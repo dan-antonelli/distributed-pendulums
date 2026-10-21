@@ -1,10 +1,50 @@
+# One command for the whole system: docker compose up --build
+# Change the number of pendulums with: docker compose up --build --scale pendulum=7
 services:
   redis:
     image: redis:8-alpine
-    ports:
-      - "6379:6379"
+    # Pub/sub needs no persistence. Every start is a clean slate, including the id counter.
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    # Not published to the host: only the services below use it, and a reviewer's own
+    # Redis on port 6379 can't clash with it (DECISIONS D25). compose.dev.yaml publishes it for development.
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 2s
       timeout: 2s
       retries: 10
+
+  pendulum:
+    build:
+      context: .
+      target: pendulum
+    environment:
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    deploy:
+      replicas: 5
+
+  gateway:
+    build:
+      context: .
+      target: gateway
+    environment:
+      REDIS_URL: redis://redis:6379
+      PORT: "8080"
+    ports:
+      - "${GATEWAY_PORT:-8080}:8080"
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  ui:
+    build:
+      context: .
+      target: ui
+      args:
+        VITE_GATEWAY_URL: http://localhost:${GATEWAY_PORT:-8080}
+    ports:
+      - "${UI_PORT:-5173}:80"
+    depends_on:
+      - gateway
