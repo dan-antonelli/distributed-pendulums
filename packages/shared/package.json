@@ -4,6 +4,11 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./redis": "./src/redis.ts",
     "./testing": "./src/testing/in-memory-bus.ts"
+  },
+  "dependencies": {
+    "@bufbuild/protobuf": "^2.16.0",
+    "redis": "^6.3.0"
   }
 }
