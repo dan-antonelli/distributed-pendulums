@@ -10,11 +10,14 @@ import {
   PendulumPhase,
   type Position,
   type Stop,
+  type Bob,
+  bobPosition,
+  bobRadiusM,
   channels,
   validateConfig,
 } from "@pendulums/shared";
-import { type Bob, bobRadiusM, neighborsWithinReach, newContacts, touchingIds } from "./collision";
-import { type Motion, bobPosition, step } from "./physics";
+import { neighborsWithinReach, newContacts, touchingIds } from "./collision";
+import { type Motion, step } from "./physics";
 
 export const HEARTBEAT_INTERVAL_MS = 200;
 // A peer silent for this long is treated as gone (DECISIONS D5).

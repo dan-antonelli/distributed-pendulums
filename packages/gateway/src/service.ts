@@ -1,0 +1,93 @@
+import { create } from "@bufbuild/protobuf";
+import { Code, ConnectError, type ConnectRouter, type ServiceImpl } from "@connectrpc/connect";
+import {
+  type Bus,
+  BusMessageSchema,
+  CommandType,
+  type PendulumConfig,
+  PendulumConfigSchema,
+  PendulumPhase,
+  SimulationService,
+  channels,
+  isTouching,
+  startingBob,
+  validateConfig,
+} from "@pendulums/shared";
+import type { SystemView } from "./view";
+
+export const SNAPSHOT_INTERVAL_MS = 50;
+
+// The public API (DECISIONS D13). Every command is validated here, then broadcast on the bus.
+// A successful response means "accepted and broadcast", not "applied": the bus has no replies.
+export function simulationService(bus: Bus, view: SystemView): ServiceImpl<typeof SimulationService> {
+  const command = (type: CommandType) => {
+    bus.publish(channels.control, create(BusMessageSchema, { body: { case: "command", value: { type } } }));
+    return {};
+  };
+
+  return {
+    async *watchPendulums(_request, context) {
+      while (!context.signal.aborted) {
+        yield { pendulums: view.snapshot() };
+        await wait(SNAPSHOT_INTERVAL_MS, context.signal);
+      }
+    },
+
+    updateConfig(request) {
+      const current = view.get(request.id);
+      if (!current?.config) throw new ConnectError(`no pendulum with id ${request.id}`, Code.NotFound);
+      // Best effort: this view can be a moment old. The pendulum server has the final say.
+      if (current.phase !== PendulumPhase.STOPPED) {
+        throw new ConnectError("stop the simulation before changing a pendulum", Code.FailedPrecondition);
+      }
+
+      // Partial update: fields the client didn't send keep their current value.
+      const config = create(PendulumConfigSchema, {
+        anchorXM: request.anchorXM ?? current.config.anchorXM,
+        lengthM: request.lengthM ?? current.config.lengthM,
+        massKg: request.massKg ?? current.config.massKg,
+        initialAngleRad: request.initialAngleRad ?? current.config.initialAngleRad,
+      });
+
+      const problems = validateConfig(config);
+      if (problems.length === 0) {
+        const overlapping = firstOverlap(request.id, config, view.configs());
+        if (overlapping !== undefined) problems.push(`its bob would start touching pendulum ${overlapping}`);
+      }
+      if (problems.length > 0) throw new ConnectError(problems.join("; "), Code.InvalidArgument);
+
+      bus.publish(
+        channels.control,
+        create(BusMessageSchema, { body: { case: "configUpdate", value: { id: request.id, config } } }),
+      );
+      return {};
+    },
+
+    start: () => command(CommandType.START),
+    pause: () => command(CommandType.PAUSE),
+    stop: () => command(CommandType.STOP),
+  };
+}
+
+export const routes = (bus: Bus, view: SystemView) => (router: ConnectRouter) =>
+  router.service(SimulationService, simulationService(bus, view));
+
+// Starting overlapped would fire a collision the instant the user presses start (DECISIONS D11).
+function firstOverlap(id: number, config: PendulumConfig, others: Map<number, PendulumConfig>): number | undefined {
+  const bob = startingBob(config);
+  for (const [otherId, other] of others) {
+    if (otherId !== id && isTouching(bob, startingBob(other))) return otherId;
+  }
+  return undefined;
+}
+
+// Resolves after `ms`, or as soon as the client disconnects.
+function wait(ms: number, signal: AbortSignal): Promise<void> {
+  return new Promise((resolve) => {
+    const timer = setTimeout(resolve, ms);
+    signal.addEventListener("abort", () => {
+      clearTimeout(timer);
+      resolve();
+    }, { once: true });
+  });
+}

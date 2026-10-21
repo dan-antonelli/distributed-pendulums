@@ -1,7 +1,5 @@
-import { create } from "@bufbuild/protobuf";
-import { PendulumConfigSchema } from "@pendulums/shared";
 import { describe, expect, test } from "vitest";
-import { GRAVITY_M_S2, type Motion, STEP_S, bobPosition, step } from "../src/physics";
+import { GRAVITY_M_S2, type Motion, STEP_S, step } from "../src/physics";
 
 const LENGTH_M = 1;
 
@@ -58,21 +56,5 @@ describe("step", () => {
     const history = run({ angleRad: 1, velocityRadS: 0 }, 10_000, plainEuler);
     // It ends with over 30 times the energy it started with.
     expect(energy(history.at(-1)!)).toBeGreaterThan(energy(history[0]!) * 10);
-  });
-});
-
-describe("bobPosition", () => {
-  const config = create(PendulumConfigSchema, { anchorXM: 2, lengthM: 1, massKg: 1 });
-
-  test("at rest, the bob hangs straight below the anchor", () => {
-    const { xM, yM } = bobPosition(config, 0);
-    expect(xM).toBe(2);
-    expect(yM).toBe(1);
-  });
-
-  test("at 90 degrees, the bob is level with the anchor, one length to the right", () => {
-    const { xM, yM } = bobPosition(config, Math.PI / 2);
-    expect(xM).toBeCloseTo(3);
-    expect(yM).toBeCloseTo(0);
   });
 });

@@ -1,5 +1,3 @@
-import type { PendulumConfig } from "@pendulums/shared";
-
 export const GRAVITY_M_S2 = 9.81;
 // One physics step. The loop always advances by exactly this much (DECISIONS D7).
 export const STEP_S = 1 / 60;
@@ -20,12 +18,4 @@ export function step(motion: Motion, lengthM: number, dtS: number): Motion {
   const velocityRadS = motion.velocityRadS + accelerationRadS2 * dtS;
   const angleRad = motion.angleRad + velocityRadS * dtS;
   return { angleRad, velocityRadS };
-}
-
-// Where the bob is, in meters. y grows downward from the anchor line.
-export function bobPosition(config: PendulumConfig, angleRad: number): { xM: number; yM: number } {
-  return {
-    xM: config.anchorXM + config.lengthM * Math.sin(angleRad),
-    yM: config.lengthM * Math.cos(angleRad),
-  };
 }

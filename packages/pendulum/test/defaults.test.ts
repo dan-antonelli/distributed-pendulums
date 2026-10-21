@@ -1,8 +1,7 @@
-import { validateConfig } from "@pendulums/shared";
+import { type Bob, bobPosition, bobRadiusM, isTouching, validateConfig } from "@pendulums/shared";
 import { describe, expect, test } from "vitest";
-import { type Bob, bobRadiusM, isTouching } from "../src/collision";
 import { defaultConfig } from "../src/defaults";
-import { type Motion, STEP_S, bobPosition, step } from "../src/physics";
+import { type Motion, STEP_S, step } from "../src/physics";
 
 // The demo promise: start it, and a collision happens within a couple of seconds.
 function secondsUntilFirstCollision(serverCount: number): number | undefined {

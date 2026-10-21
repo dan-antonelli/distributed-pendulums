@@ -43,6 +43,13 @@ export async function connectRedis(url: string) {
     unsubscribe(channel) {
       subscriber.unsubscribe(channel).catch(logError);
     },
+    subscribePattern(pattern, handler) {
+      const listener = (raw: Buffer) => {
+        const message = decode(raw);
+        if (message) handler(message);
+      };
+      subscriber.pSubscribe(pattern, listener, true).catch(logError);
+    },
   };
 
   return {

@@ -4,3 +4,4 @@ export * from "./gen/pendulum/v1/simulation_pb";
 export * from "./bus";
 export * from "./channels";
 export * from "./config";
+export * from "./geometry";

@@ -1,31 +1,11 @@
 import { create } from "@bufbuild/protobuf";
-import { PendulumConfigSchema } from "@pendulums/shared";
+import { type Bob, PendulumConfigSchema } from "@pendulums/shared";
 import { describe, expect, test } from "vitest";
-import { type Bob, bobRadiusM, canReach, isTouching, neighborsWithinReach, newContacts, touchingIds } from "../src/collision";
+import { canReach, neighborsWithinReach, newContacts, touchingIds } from "../src/collision";
 
 const config = (anchorXM: number, lengthM: number, massKg = 1) =>
   create(PendulumConfigSchema, { anchorXM, lengthM, massKg });
 const bob = (xM: number, yM = 1, radiusM = 0.1): Bob => ({ xM, yM, radiusM });
-
-describe("bobRadiusM", () => {
-  test("8 times the mass gives twice the radius, like balls of the same material", () => {
-    expect(bobRadiusM(8)).toBeCloseTo(2 * bobRadiusM(1));
-  });
-});
-
-describe("isTouching", () => {
-  test("overlapping bobs are touching", () => {
-    expect(isTouching(bob(0), bob(0.15))).toBe(true);
-  });
-
-  test("bobs with a small gap are not touching", () => {
-    expect(isTouching(bob(0), bob(0.25))).toBe(false);
-  });
-
-  test("a bigger bob reaches further: same gap, touching once one bob is heavier", () => {
-    expect(isTouching(bob(0), bob(0.25, 1, 0.2))).toBe(true);
-  });
-});
 
 describe("neighbors within reach", () => {
   test("pendulums too far apart to ever touch are not neighbors", () => {
