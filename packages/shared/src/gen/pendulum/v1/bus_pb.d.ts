@@ -135,6 +135,14 @@ export declare type Position = Message<"pendulum.v1.Position"> & {
    * @generated from field: double bob_y_m = 3;
    */
   bobYM: number;
+
+  /**
+   * Added in step 4: neighbors only count collisions with bobs that are actually running.
+   * Without it, a pendulum that restarts a few ms early sees its neighbor still frozen at the old collision spot.
+   *
+   * @generated from field: pendulum.v1.PendulumPhase phase = 4;
+   */
+  phase: PendulumPhase;
 };
 
 /**

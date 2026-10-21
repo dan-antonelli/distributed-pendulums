@@ -2,5 +2,8 @@
   "name": "@pendulums/shared",
   "private": true,
   "type": "module",
-  "exports": { ".": "./src/index.ts" }
+  "exports": {
+    ".": "./src/index.ts",
+    "./testing": "./src/testing/in-memory-bus.ts"
+  }
 }

@@ -38,6 +38,9 @@ message Position {
   uint32 id = 1;
   double bob_x_m = 2;
   double bob_y_m = 3;
+  // Added in step 4: neighbors only count collisions with bobs that are actually running.
+  // Without it, a pendulum that restarts a few ms early sees its neighbor still frozen at the old collision spot.
+  PendulumPhase phase = 4;
 }
 
 // Collision STOP. Starts cycle `cycle` everywhere.
