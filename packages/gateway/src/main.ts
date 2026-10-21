@@ -1,5 +1,3 @@
-import { create } from "@bufbuild/protobuf";
-import { PingSchema } from "@pendulums/shared";
+import { channels } from "@pendulums/shared";
 
-const ping = create(PingSchema, { text: "gateway up" });
-console.log(ping.text);
+console.log("gateway: will use", channels.heartbeat);

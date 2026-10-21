@@ -2,7 +2,7 @@
 // @generated from file pendulum/v1/pendulum.proto (package pendulum.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
+import type { GenEnum, GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
@@ -11,20 +11,82 @@ import type { Message } from "@bufbuild/protobuf";
 export declare const file_pendulum_v1_pendulum: GenFile;
 
 /**
- * Placeholder so codegen runs. Replaced in step 1.
- *
- * @generated from message pendulum.v1.Ping
+ * @generated from message pendulum.v1.PendulumConfig
  */
-export declare type Ping = Message<"pendulum.v1.Ping"> & {
+export declare type PendulumConfig = Message<"pendulum.v1.PendulumConfig"> & {
   /**
-   * @generated from field: string text = 1;
+   * @generated from field: double anchor_x_m = 1;
    */
-  text: string;
+  anchorXM: number;
+
+  /**
+   * @generated from field: double length_m = 2;
+   */
+  lengthM: number;
+
+  /**
+   * @generated from field: double mass_kg = 3;
+   */
+  massKg: number;
+
+  /**
+   * 0 hangs straight down; positive swings to the right.
+   *
+   * @generated from field: double initial_angle_rad = 4;
+   */
+  initialAngleRad: number;
 };
 
 /**
- * Describes the message pendulum.v1.Ping.
- * Use `create(PingSchema)` to create a new message.
+ * Describes the message pendulum.v1.PendulumConfig.
+ * Use `create(PendulumConfigSchema)` to create a new message.
  */
-export declare const PingSchema: GenMessage<Ping>;
+export declare const PendulumConfigSchema: GenMessage<PendulumConfig>;
+
+/**
+ * @generated from enum pendulum.v1.PendulumPhase
+ */
+export enum PendulumPhase {
+  /**
+   * @generated from enum value: PENDULUM_PHASE_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: PENDULUM_PHASE_STOPPED = 1;
+   */
+  STOPPED = 1,
+
+  /**
+   * @generated from enum value: PENDULUM_PHASE_RUNNING = 2;
+   */
+  RUNNING = 2,
+
+  /**
+   * @generated from enum value: PENDULUM_PHASE_PAUSED = 3;
+   */
+  PAUSED = 3,
+
+  /**
+   * Collision cycle (DECISIONS D20): halted -> ready -> waiting -> running.
+   *
+   * @generated from enum value: PENDULUM_PHASE_HALTED = 4;
+   */
+  HALTED = 4,
+
+  /**
+   * @generated from enum value: PENDULUM_PHASE_READY = 5;
+   */
+  READY = 5,
+
+  /**
+   * @generated from enum value: PENDULUM_PHASE_WAITING = 6;
+   */
+  WAITING = 6,
+}
+
+/**
+ * Describes the enum pendulum.v1.PendulumPhase.
+ */
+export declare const PendulumPhaseSchema: GenEnum<PendulumPhase>;
 

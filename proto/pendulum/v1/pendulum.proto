@@ -2,7 +2,25 @@ syntax = "proto3";
 
 package pendulum.v1;
 
-// Placeholder so codegen runs. Replaced in step 1.
-message Ping {
-  string text = 1;
+// Types shared by the internal bus (bus.proto) and the public API (simulation.proto).
+// Units are in the field names: meters, kilograms, radians.
+// Coordinates: x grows to the right, y grows downward from the anchor line.
+
+message PendulumConfig {
+  double anchor_x_m = 1;
+  double length_m = 2;
+  double mass_kg = 3;
+  // 0 hangs straight down; positive swings to the right.
+  double initial_angle_rad = 4;
+}
+
+enum PendulumPhase {
+  PENDULUM_PHASE_UNSPECIFIED = 0;
+  PENDULUM_PHASE_STOPPED = 1;
+  PENDULUM_PHASE_RUNNING = 2;
+  PENDULUM_PHASE_PAUSED = 3;
+  // Collision cycle (DECISIONS D20): halted -> ready -> waiting -> running.
+  PENDULUM_PHASE_HALTED = 4;
+  PENDULUM_PHASE_READY = 5;
+  PENDULUM_PHASE_WAITING = 6;
 }

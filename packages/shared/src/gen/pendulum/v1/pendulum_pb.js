@@ -2,18 +2,30 @@
 // @generated from file pendulum/v1/pendulum.proto (package pendulum.v1, syntax proto3)
 /* eslint-disable */
 
-import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
+import { enumDesc, fileDesc, messageDesc, tsEnum } from "@bufbuild/protobuf/codegenv2";
 
 /**
  * Describes the file pendulum/v1/pendulum.proto.
  */
 export const file_pendulum_v1_pendulum = /*@__PURE__*/
-  fileDesc("ChpwZW5kdWx1bS92MS9wZW5kdWx1bS5wcm90bxILcGVuZHVsdW0udjEiFAoEUGluZxIMCgR0ZXh0GAEgASgJYgZwcm90bzM");
+  fileDesc("ChpwZW5kdWx1bS92MS9wZW5kdWx1bS5wcm90bxILcGVuZHVsdW0udjEiYgoOUGVuZHVsdW1Db25maWcSEgoKYW5jaG9yX3hfbRgBIAEoARIQCghsZW5ndGhfbRgCIAEoARIPCgdtYXNzX2tnGAMgASgBEhkKEWluaXRpYWxfYW5nbGVfcmFkGAQgASgBKtMBCg1QZW5kdWx1bVBoYXNlEh4KGlBFTkRVTFVNX1BIQVNFX1VOU1BFQ0lGSUVEEAASGgoWUEVORFVMVU1fUEhBU0VfU1RPUFBFRBABEhoKFlBFTkRVTFVNX1BIQVNFX1JVTk5JTkcQAhIZChVQRU5EVUxVTV9QSEFTRV9QQVVTRUQQAxIZChVQRU5EVUxVTV9QSEFTRV9IQUxURUQQBBIYChRQRU5EVUxVTV9QSEFTRV9SRUFEWRAFEhoKFlBFTkRVTFVNX1BIQVNFX1dBSVRJTkcQBmIGcHJvdG8z");
 
 /**
- * Describes the message pendulum.v1.Ping.
- * Use `create(PingSchema)` to create a new message.
+ * Describes the message pendulum.v1.PendulumConfig.
+ * Use `create(PendulumConfigSchema)` to create a new message.
  */
-export const PingSchema = /*@__PURE__*/
+export const PendulumConfigSchema = /*@__PURE__*/
   messageDesc(file_pendulum_v1_pendulum, 0);
+
+/**
+ * Describes the enum pendulum.v1.PendulumPhase.
+ */
+export const PendulumPhaseSchema = /*@__PURE__*/
+  enumDesc(file_pendulum_v1_pendulum, 0);
+
+/**
+ * @generated from enum pendulum.v1.PendulumPhase
+ */
+export const PendulumPhase = /*@__PURE__*/
+  tsEnum(PendulumPhaseSchema);
 

@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package pendulum.v1;
+
+import "pendulum/v1/pendulum.proto";
+
+// Internal messages between pendulum servers and the gateway, sent over Redis pub/sub.
+// Not part of the public API: this file can change without breaking the UI.
+
+// Every Redis message is one BusMessage, so a receiver decodes once and switches on `body`.
+message BusMessage {
+  oneof body {
+    Heartbeat heartbeat = 1;
+    Position position = 2;
+    Stop stop = 3;
+    Restart restart = 4;
+    Ready ready = 5;
+    Command command = 6;
+    ConfigUpdate config_update = 7;
+  }
+}
+
+// 5 per second on the shared heartbeat channel, in every phase.
+// Used for membership, neighbor discovery, catching up on a missed STOP, and the gateway's view.
+message Heartbeat {
+  uint32 id = 1;
+  PendulumConfig config = 2;
+  PendulumPhase phase = 3;
+  // Last collision cycle this server joined. 0 = none yet.
+  uint32 cycle = 4;
+  // Only set while waiting: time left before the restart.
+  uint32 restart_in_ms = 5;
+}
+
+// 60 per second, on the sender's own channel. Only pendulums within reach subscribe.
+// Carries the bob's position directly, so receivers don't need the sender's config to check collisions.
+message Position {
+  uint32 id = 1;
+  double bob_x_m = 2;
+  double bob_y_m = 3;
+}
+
+// Collision STOP. Starts cycle `cycle` everywhere.
+message Stop {
+  uint32 from_id = 1;
+  uint32 cycle = 2;
+  // The pendulum `from_id` collided with. Lets the UI show who hit whom.
+  uint32 hit_id = 3;
+}
+
+// "I have halted for this cycle." Resent every second until the cycle moves on.
+message Restart {
+  uint32 from_id = 1;
+  uint32 cycle = 2;
+}
+
+// "I have RESTART from every participant." Resent every second until the cycle moves on.
+message Ready {
+  uint32 from_id = 1;
+  uint32 cycle = 2;
+}
+
+// User commands, forwarded by the gateway. Apply to every pendulum.
+message Command {
+  CommandType type = 1;
+}
+
+enum CommandType {
+  COMMAND_TYPE_UNSPECIFIED = 0;
+  COMMAND_TYPE_START = 1;
+  COMMAND_TYPE_PAUSE = 2;
+  // User stop: ends everything and cancels any collision cycle. Not the same as a collision Stop.
+  COMMAND_TYPE_STOP = 3;
+}
+
+// A complete, validated config for one pendulum. The gateway merges partial API updates first.
+message ConfigUpdate {
+  uint32 id = 1;
+  PendulumConfig config = 2;
+}
