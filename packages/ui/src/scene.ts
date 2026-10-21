@@ -23,17 +23,26 @@ export function restartCountdownS(pendulums: PendulumView[]): number | undefined
   return Math.max(...waiting.map((p) => p.restartInMs)) / 1000;
 }
 
-// The area to draw, in meters: wide and deep enough for every pendulum at any angle.
-export function sceneBounds(pendulums: PendulumView[]) {
-  const reach = pendulums.map((p) => {
-    const lengthM = p.config?.lengthM ?? 1;
-    const anchorXM = p.config?.anchorXM ?? 0;
-    const radiusM = bobRadiusM(p.config?.massKg ?? 1);
-    return { left: anchorXM - lengthM - radiusM, right: anchorXM + lengthM + radiusM, depth: lengthM + radiusM };
+const SIDE_MARGIN_M = 0.15;
+const BOTTOM_MARGIN_M = 0.1;
+// Room above the beam for the pendulum numbers.
+const TOP_M = 0.3;
+
+// The area to frame, in meters: everywhere a bob can actually go, plus a small margin.
+// A frictionless pendulum never swings wider than the angle it started from, so each bob's sideways
+// reach is length × sin(starting angle), not its full length. Its lowest point is straight down.
+// Only the outermost and the longest pendulums shape the frame; editing any other one moves nothing.
+export function swingFrame(pendulums: PendulumView[]) {
+  const configs = pendulums.flatMap((p) => (p.config ? [p.config] : []));
+  if (configs.length === 0) return { xM: -SIDE_MARGIN_M, yM: -TOP_M, widthM: 2 + 2 * SIDE_MARGIN_M, heightM: 1 + TOP_M };
+
+  const reach = configs.map((c) => {
+    const radiusM = bobRadiusM(c.massKg);
+    const sidewaysM = c.lengthM * Math.sin(Math.min(Math.abs(c.initialAngleRad), Math.PI / 2)) + radiusM;
+    return { left: c.anchorXM - sidewaysM, right: c.anchorXM + sidewaysM, bottom: c.lengthM + radiusM };
   });
-  const margin = 0.3;
-  const left = Math.min(0, ...reach.map((r) => r.left)) - margin;
-  const right = Math.max(2, ...reach.map((r) => r.right)) + margin;
-  const depth = Math.max(1, ...reach.map((r) => r.depth)) + margin;
-  return { xM: left, yM: -0.35, widthM: right - left, heightM: depth + 0.35 };
+  const left = Math.min(...reach.map((r) => r.left)) - SIDE_MARGIN_M;
+  const right = Math.max(...reach.map((r) => r.right)) + SIDE_MARGIN_M;
+  const bottom = Math.max(...reach.map((r) => r.bottom)) + BOTTOM_MARGIN_M;
+  return { xM: left, yM: -TOP_M, widthM: right - left, heightM: bottom + TOP_M };
 }

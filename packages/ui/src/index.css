@@ -144,18 +144,73 @@ button.quiet {
 /* Stage */
 
 .stage {
-  position: relative;
   overflow: hidden;
   border: 1px solid var(--rule);
   border-radius: 10px;
   background: var(--panel);
 }
 
+/* Status and zoom. Always present and always the same height, so the box below never moves. */
+.stage__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 48px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.stage__status {
+  margin: 0;
+  color: var(--graphite);
+  font-weight: 600;
+}
+
+/* The one loud element: a safety band while the collision cycle runs. */
+.stage__bar--hazard {
+  background: repeating-linear-gradient(-45deg, var(--amber) 0 14px, var(--ink) 14px 28px);
+}
+
+.stage__bar--hazard .stage__status span {
+  padding: 2px 12px;
+  border-radius: 4px;
+  background: var(--amber);
+  color: var(--amber-ink);
+  font-weight: 700;
+  font-stretch: 112%;
+}
+
+.zoom {
+  display: flex;
+  gap: 4px;
+}
+
+.zoom button {
+  min-width: 40px;
+  padding: 4px 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Fixed height whatever the pendulums: the drawing zooms to fit instead of resizing the page. */
+.stage__box {
+  height: clamp(260px, 42vh, 460px);
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.stage__box--zoomed {
+  overflow-y: auto;
+}
+
+.stage__box:focus-visible {
+  outline: 3px solid var(--signal);
+  outline-offset: -3px;
+}
+
 .stage svg {
   display: block;
-  width: 100%;
-  height: auto;
-  max-height: 62vh;
+  margin: 0 auto;
 }
 
 .grid line {
@@ -211,27 +266,6 @@ button.quiet {
 .bob--cycle {
   fill: var(--amber);
   stroke: var(--amber-ink);
-}
-
-/* The one loud element: a safety band while the collision cycle runs.
-   Sits along the bottom of the stage, where nothing is drawn. */
-.hazard {
-  position: absolute;
-  inset: auto 0 0;
-  z-index: 1;
-  display: flex;
-  justify-content: center;
-  padding: 10px 16px;
-  background: repeating-linear-gradient(-45deg, var(--amber) 0 14px, var(--ink) 14px 28px);
-}
-
-.hazard span {
-  padding: 2px 12px;
-  border-radius: 4px;
-  background: var(--amber);
-  color: var(--amber-ink);
-  font-weight: 700;
-  font-stretch: 112%;
 }
 
 /* Configuration */

@@ -1,7 +1,7 @@
 import { create } from "@bufbuild/protobuf";
 import { PendulumPhase, PendulumViewSchema } from "@pendulums/shared";
 import { describe, expect, test } from "vitest";
-import { isEditable, restartCountdownS, systemState } from "../src/scene";
+import { isEditable, restartCountdownS, swingFrame, systemState } from "../src/scene";
 
 const { STOPPED, RUNNING, PAUSED, HALTED, WAITING } = PendulumPhase;
 const pendulum = (phase: PendulumPhase, restartInMs = 0) => create(PendulumViewSchema, { phase, restartInMs });
@@ -28,4 +28,34 @@ test("config is editable only when every pendulum is stopped", () => {
 test("the countdown follows the pendulum that will restart last", () => {
   expect(restartCountdownS([pendulum(WAITING, 3000), pendulum(WAITING, 3200), pendulum(HALTED)])).toBe(3.2);
   expect(restartCountdownS([pendulum(HALTED)])).toBeUndefined();
+});
+
+describe("swingFrame", () => {
+  const pendulum = (anchorXM: number, lengthM = 1, initialAngleRad = Math.PI / 6) =>
+    create(PendulumViewSchema, { config: { anchorXM, lengthM, massKg: 1, initialAngleRad } });
+
+  test("frames where the bobs can actually swing, wherever the pendulums hang", () => {
+    // Ids keep climbing while Redis runs, and anchors follow the id, so pendulums can sit far from 0 m.
+    // At 30 degrees a 1 m pendulum reaches 0.5 m sideways, plus its 0.1 m bob, plus the 0.15 m margin.
+    const frame = swingFrame([pendulum(14.7), pendulum(17.5)]);
+    expect(frame.xM).toBeCloseTo(14.7 - 0.75);
+    expect(frame.xM + frame.widthM).toBeCloseTo(17.5 + 0.75);
+  });
+
+  test("leaves only a small margin under the lowest bob", () => {
+    const frame = swingFrame([pendulum(0, 1), pendulum(1, 0.6)]);
+    expect(frame.yM + frame.heightM).toBeCloseTo(1 + 0.1 + 0.1);
+  });
+
+  test("editing a pendulum that is neither at the edge nor the longest doesn't move the frame", () => {
+    const before = swingFrame([pendulum(0), pendulum(1, 0.6), pendulum(2)]);
+    const after = swingFrame([pendulum(0), pendulum(1, 0.9), pendulum(2)]);
+    expect(after).toEqual(before);
+  });
+
+  test("with no pendulums, frames the first two meters", () => {
+    const frame = swingFrame([]);
+    expect(frame.xM).toBeCloseTo(-0.15);
+    expect(frame.widthM).toBeCloseTo(2.3);
+  });
 });
