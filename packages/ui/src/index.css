@@ -1,111 +1,338 @@
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  --steel: #e6e9ec;
+  --panel: #f6f7f8;
+  --ink: #1d2329;
+  --graphite: #5b6670;
+  --rule: #c9cfd5;
+  --signal: #2266cc;
+  --amber: #e8a317;
+  --amber-ink: #5a3d00;
+  --fault: #b3261e;
+  --radius-control: 6px;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
-
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
+  color: var(--ink);
+  background: var(--steel);
+  font-family: "Archivo Variable", system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
-
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
+* {
   box-sizing: border-box;
 }
 
 body {
   margin: 0;
+  background: var(--steel);
 }
 
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
+.app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
 }
 
 h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
   margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  font-stretch: 112%;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
 }
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
+h2 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 650;
+}
+
+.connection {
+  margin: 4px 0 0;
+  color: var(--graphite);
+  font-size: 0.875rem;
+}
+
+.connection::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: var(--graphite);
+  vertical-align: 1px;
+}
+
+.connection--live::before {
+  background: var(--signal);
+}
+
+.connection--reconnecting::before {
+  background: var(--fault);
+}
+
+/* Controls */
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+button {
+  font: inherit;
+  font-weight: 600;
+  padding: 8px 18px;
+  border: 1px solid var(--ink);
+  border-radius: var(--radius-control);
+  background: var(--panel);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+  background: #fff;
+}
+
+button:disabled {
+  border-color: var(--rule);
+  color: #9aa3ab;
+  cursor: not-allowed;
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: 3px solid var(--signal);
+  outline-offset: 2px;
+}
+
+.control--start:not(:disabled) {
+  background: var(--ink);
+  color: #fff;
+}
+
+.control--start:hover:not(:disabled) {
+  background: #2e3740;
+}
+
+button.quiet {
+  border-color: transparent;
+  background: transparent;
+  font-weight: 500;
+  color: var(--graphite);
+}
+
+.error {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--fault);
+  font-size: 0.875rem;
+}
+
+/* Stage */
+
+.stage {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  background: var(--panel);
+}
+
+.stage svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 62vh;
+}
+
+.grid line {
+  stroke: #dde2e6;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.beam {
+  stroke: var(--ink);
+  stroke-width: 6;
+  vector-effect: non-scaling-stroke;
+}
+
+.beam--cycle {
+  stroke: var(--amber);
+}
+
+.string {
+  stroke: var(--ink);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.pivot {
+  fill: var(--ink);
+}
+
+.tag {
+  fill: var(--graphite);
+  font-size: 0.09px;
+  font-weight: 600;
+  text-anchor: middle;
+}
+
+.bob {
+  fill: var(--panel);
+  stroke: var(--ink);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.bob--running {
+  fill: var(--signal);
+  stroke: #174a8a;
+}
+
+.bob--paused {
+  fill: #9fb6d6;
+  stroke: #174a8a;
+}
+
+.bob--cycle {
+  fill: var(--amber);
+  stroke: var(--amber-ink);
+}
+
+/* The one loud element: a safety band while the collision cycle runs.
+   Sits along the bottom of the stage, where nothing is drawn. */
+.hazard {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  padding: 10px 16px;
+  background: repeating-linear-gradient(-45deg, var(--amber) 0 14px, var(--ink) 14px 28px);
+}
+
+.hazard span {
+  padding: 2px 12px;
   border-radius: 4px;
-  color: var(--text-h);
+  background: var(--amber);
+  color: var(--amber-ink);
+  font-weight: 700;
+  font-stretch: 112%;
 }
 
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+/* Configuration */
+
+.config {
+  margin-top: 24px;
+}
+
+.config-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 16px;
+  margin-bottom: 8px;
+}
+
+.hint {
+  margin: 0;
+  color: var(--graphite);
+  font-size: 0.875rem;
+}
+
+.table-scroll {
+  position: relative;
+  overflow-x: auto;
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  background: var(--panel);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--rule);
+  text-align: left;
+  white-space: nowrap;
+}
+
+thead th {
+  color: var(--graphite);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+tbody tr:last-child > * {
+  border-bottom: 0;
+}
+
+tbody th {
+  font-weight: 700;
+}
+
+input {
+  width: 6.5em;
+  padding: 6px 8px;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-control);
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+}
+
+input:disabled {
+  background: transparent;
+  border-color: transparent;
+  color: var(--ink);
+}
+
+.phase {
+  color: var(--graphite);
+}
+
+.row-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.row-error td {
+  color: var(--fault);
+  font-size: 0.875rem;
+  white-space: normal;
+}
+
+.empty {
+  padding: 48px 16px;
+  border: 1px dashed var(--rule);
+  border-radius: 10px;
+  color: var(--graphite);
+  text-align: center;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
