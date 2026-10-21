@@ -17,7 +17,7 @@ import type { SystemView } from "./view";
 
 export const SNAPSHOT_INTERVAL_MS = 50;
 
-// The public API (DECISIONS D13). Every command is validated here, then broadcast on the bus.
+// The public API. Every command is validated here, then broadcast on the bus.
 // A successful response means "accepted and broadcast", not "applied": the bus has no replies.
 export function simulationService(bus: Bus, view: SystemView): ServiceImpl<typeof SimulationService> {
   const command = (type: CommandType) => {
@@ -72,7 +72,7 @@ export function simulationService(bus: Bus, view: SystemView): ServiceImpl<typeo
 export const routes = (bus: Bus, view: SystemView) => (router: ConnectRouter) =>
   router.service(SimulationService, simulationService(bus, view));
 
-// Starting overlapped would fire a collision the instant the user presses start (DECISIONS D11).
+// Starting overlapped would fire a collision the instant the user presses start.
 function firstOverlap(id: number, config: PendulumConfig, others: Map<number, PendulumConfig>): number | undefined {
   const bob = startingBob(config);
   for (const [otherId, other] of others) {

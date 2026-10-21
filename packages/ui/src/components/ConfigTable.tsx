@@ -64,7 +64,7 @@ function Row({ pendulum, editable }: { pendulum: PendulumView; editable: boolean
     if (!draft) return;
     setError(undefined);
     try {
-      // Send only what changed: the API merges partial updates (DECISIONS D13).
+      // Send only what changed: the API merges partial updates.
       await client.updateConfig({
         id: pendulum.id,
         ...(draft.anchor !== saved.anchor && { anchorXM: Number(draft.anchor) }),

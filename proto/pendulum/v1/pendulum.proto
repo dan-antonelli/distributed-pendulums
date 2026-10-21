@@ -19,7 +19,7 @@ enum PendulumPhase {
   PENDULUM_PHASE_STOPPED = 1;
   PENDULUM_PHASE_RUNNING = 2;
   PENDULUM_PHASE_PAUSED = 3;
-  // Collision cycle (DECISIONS D20): halted -> ready -> waiting -> running.
+  // Collision cycle: halted -> ready -> waiting -> running.
   PENDULUM_PHASE_HALTED = 4;
   PENDULUM_PHASE_READY = 5;
   PENDULUM_PHASE_WAITING = 6;

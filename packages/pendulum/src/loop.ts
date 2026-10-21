@@ -1,6 +1,6 @@
 import { STEP_S } from "./physics";
 
-// After a long freeze, run at most this many steps at once and drop the rest (DECISIONS D7).
+// After a long freeze, run at most this many steps at once and drop the rest.
 export const MAX_STEPS_PER_TICK = 5;
 
 // Pure: given how much time has piled up, how many fixed steps to run and how much time to carry over.

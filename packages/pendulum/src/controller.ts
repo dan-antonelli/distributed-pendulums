@@ -20,9 +20,9 @@ import { neighborsWithinReach, newContacts, touchingIds } from "./collision";
 import { type Motion, step } from "./physics";
 
 export const HEARTBEAT_INTERVAL_MS = 200;
-// A peer silent for this long is treated as gone (DECISIONS D5).
+// A peer silent for this long is treated as gone.
 export const PEER_TIMEOUT_MS = 5000;
-// RESTART and READY are resent this often during a cycle, in case one was lost (DECISIONS D20).
+// RESTART and READY are resent this often during a cycle, in case one was lost.
 export const RESEND_INTERVAL_MS = 1000;
 export const RESTART_DELAY_MS = 5000;
 
@@ -36,7 +36,7 @@ interface Peer {
   lastSeenMs: number;
 }
 
-// One pendulum server's logic: its state machine (DECISIONS D12) and its part in the collision cycle (D20).
+// One pendulum server's logic: its state machine and its part in the collision cycle.
 // It knows nothing about Redis or the clock loop; main.ts wires those in. That keeps it testable on a fake bus.
 export class PendulumController {
   private phaseNow: PendulumPhase = STOPPED;
@@ -97,7 +97,7 @@ export class PendulumController {
     for (const id of this.neighbors) this.bus.unsubscribe(channels.position(id));
   }
 
-  // Called by the simulation loop once per fixed step (DECISIONS D7).
+  // Called by the simulation loop once per fixed step.
   tick(dtS: number): void {
     if (this.phaseNow === RUNNING) this.motion = step(this.motion, this.config.lengthM, dtS);
 
@@ -147,7 +147,7 @@ export class PendulumController {
     });
     this.highestCycleSeen = Math.max(this.highestCycleSeen, heartbeat.cycle);
 
-    // A peer is already in a newer cycle, so we missed its STOP. Join now (DECISIONS D20).
+    // A peer is already in a newer cycle, so we missed its STOP. Join now.
     if (IN_CYCLE.has(heartbeat.phase) && heartbeat.cycle > this.cycleNumber) this.joinCycle(heartbeat.cycle);
     this.updateNeighbors();
   }
@@ -198,7 +198,7 @@ export class PendulumController {
 
   private onConfigUpdate(update: ConfigUpdate): void {
     if (update.id !== this.id || !update.config) return;
-    // The gateway checks too, but its view can be a moment old. The server has the final say (DECISIONS D13).
+    // The gateway checks too, but its view can be a moment old. The server has the final say.
     if (this.phaseNow !== STOPPED || validateConfig(update.config).length > 0) return;
     this.config = update.config;
     this.motion = this.startingMotion();
@@ -206,7 +206,7 @@ export class PendulumController {
     this.publishHeartbeat();
   }
 
-  // --- The collision cycle (DECISIONS D20) ---
+  // --- The collision cycle ---
 
   private startCycle(hitId: number): void {
     const cycle = Math.max(this.cycleNumber, this.highestCycleSeen) + 1;
@@ -223,7 +223,7 @@ export class PendulumController {
     this.highestCycleSeen = Math.max(this.highestCycleSeen, cycle);
     this.phaseNow = HALTED;
 
-    // Freeze who we wait for. Servers that join later don't change it (DECISIONS D5).
+    // Freeze who we wait for. Servers that join later don't change it.
     this.participants = new Set([this.id, ...this.livePeerIds()]);
     this.restartsFrom = new Set([this.id]);
     this.readiesFrom = new Set();
@@ -303,7 +303,7 @@ export class PendulumController {
     if (IN_CYCLE.has(this.phaseNow)) this.advanceCycle();
   }
 
-  // Subscribe only to the position channels of pendulums within reach (DECISIONS D4, D18).
+  // Subscribe only to the position channels of pendulums within reach.
   private updateNeighbors(): void {
     const configs = new Map([...this.peers].map(([id, peer]) => [id, peer.config]));
     const next = new Set(neighborsWithinReach(this.id, this.config, configs));

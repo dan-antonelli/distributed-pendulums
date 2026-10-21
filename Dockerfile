@@ -1,4 +1,4 @@
-# One Dockerfile, one image per service (targets: pendulum, gateway, ui). See DECISIONS D9, D25.
+# One Dockerfile, one image per service (targets: pendulum, gateway, ui).
 # Debian-based Node, not Alpine: the UI build uses native binaries that target glibc.
 
 FROM node:24-slim AS deps
@@ -15,7 +15,7 @@ FROM deps AS source
 COPY tsconfig.base.json tsconfig.json ./
 COPY packages packages
 
-# Servers run their TypeScript directly with tsx: no build step (DECISIONS D19).
+# Servers run their TypeScript directly with tsx: no build step.
 FROM source AS pendulum
 CMD ["node", "--import", "tsx", "packages/pendulum/src/main.ts"]
 

@@ -1,7 +1,7 @@
 import { create } from "@bufbuild/protobuf";
 import { type BusMessage, type PendulumConfig, type PendulumView, PendulumViewSchema } from "@pendulums/shared";
 
-// A pendulum silent this long disappears from the UI. Shorter than the servers' 5 s (DECISIONS D5):
+// A pendulum silent this long disappears from the UI. Shorter than the servers' 5 s:
 // a wrong guess here only affects the display, never the collision cycle.
 export const STALE_AFTER_MS = 2000;
 

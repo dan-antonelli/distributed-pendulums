@@ -7,7 +7,7 @@ const NEXT_ID_KEY = "pendulums:next-id";
 
 const logError = (error: unknown) => console.error("redis:", error instanceof Error ? error.message : error);
 
-// The production Bus: Redis pub/sub carrying binary protobuf (DECISIONS D2, D17).
+// The production Bus: Redis pub/sub carrying binary protobuf.
 // Node-only, so it lives behind its own import path ("@pendulums/shared/redis") and never reaches the browser bundle.
 export async function connectRedis(url: string) {
   const publisher = createClient({ url });
@@ -23,7 +23,7 @@ export async function connectRedis(url: string) {
     try {
       return fromBinary(BusMessageSchema, raw);
     } catch (error) {
-      // Not ours, or a version we can't read. Log and drop it rather than crash (DECISIONS D14).
+      // Not ours, or a version we can't read. Log and drop it rather than crash.
       logError(error);
       return undefined;
     }
@@ -54,7 +54,7 @@ export async function connectRedis(url: string) {
 
   return {
     bus,
-    // Atomic: Redis runs commands one at a time, so two servers starting together never get the same id (DECISIONS D10).
+    // Atomic: Redis runs commands one at a time, so two servers starting together never get the same id.
     claimId: () => publisher.incr(NEXT_ID_KEY),
     async close() {
       await subscriber.close();

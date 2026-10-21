@@ -6,7 +6,7 @@ export type Connection = "connecting" | "live" | "reconnecting";
 
 const MAX_RETRY_DELAY_MS = 8000;
 
-// Holds the latest snapshot from the gateway's stream (DECISIONS D3, D15).
+// Holds the latest snapshot from the gateway's stream.
 // Reconnects with a growing delay; every new stream starts with a full snapshot, so nothing is lost.
 export function usePendulums() {
   const [pendulums, setPendulums] = useState<PendulumView[]>([]);

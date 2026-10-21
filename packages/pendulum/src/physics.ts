@@ -1,5 +1,5 @@
 export const GRAVITY_M_S2 = 9.81;
-// One physics step. The loop always advances by exactly this much (DECISIONS D7).
+// One physics step. The loop always advances by exactly this much.
 export const STEP_S = 1 / 60;
 
 export interface Motion {
@@ -14,7 +14,7 @@ export function step(motion: Motion, lengthM: number, dtS: number): Motion {
   const accelerationRadS2 = -(GRAVITY_M_S2 / lengthM) * Math.sin(motion.angleRad);
 
   // Semi-implicit Euler: update speed first, then move using the NEW speed.
-  // Using the old speed instead (plain Euler) adds energy every step (DECISIONS D6).
+  // Using the old speed instead (plain Euler) adds energy every step.
   const velocityRadS = motion.velocityRadS + accelerationRadS2 * dtS;
   const angleRad = motion.angleRad + velocityRadS * dtS;
   return { angleRad, velocityRadS };

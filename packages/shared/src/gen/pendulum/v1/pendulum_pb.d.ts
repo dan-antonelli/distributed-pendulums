@@ -68,7 +68,7 @@ export enum PendulumPhase {
   PAUSED = 3,
 
   /**
-   * Collision cycle (DECISIONS D20): halted -> ready -> waiting -> running.
+   * Collision cycle: halted -> ready -> waiting -> running.
    *
    * @generated from enum value: PENDULUM_PHASE_HALTED = 4;
    */
