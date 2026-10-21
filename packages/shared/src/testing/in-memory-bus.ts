@@ -15,7 +15,7 @@ export class InMemoryBus {
 
   connect(name: string): Bus & { disconnect(): void } {
     return {
-      publish: (channel, message) => this.deliver(channel, message),
+      publish: async (channel, message) => this.deliver(channel, message),
       subscribe: (channel, handler) => this.channel(channel).set(name, handler),
       unsubscribe: (channel) => this.subscriptions.get(channel)?.delete(name),
       subscribePattern: (pattern, handler) => {

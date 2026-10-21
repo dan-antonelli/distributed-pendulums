@@ -38,6 +38,14 @@ export class SystemView {
     }
   };
 
+  // Called right after the gateway sends a new config, before the pendulum's heartbeat confirms it.
+  // A second quick edit then merges with this one instead of the old config, so neither is lost.
+  // If the pendulum rejects the change, its next heartbeat puts the real config back.
+  rememberSentConfig(id: number, config: PendulumConfig): void {
+    const entry = this.pendulums.get(id);
+    if (entry) entry.view.config = config;
+  }
+
   get(id: number): PendulumView | undefined {
     return this.pendulums.get(id)?.view;
   }

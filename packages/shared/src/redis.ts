@@ -10,12 +10,15 @@ const logError = (error: unknown) => console.error("redis:", error instanceof Er
 // The production Bus: Redis pub/sub carrying binary protobuf.
 // Node-only, so it lives behind its own import path ("@pendulums/shared/redis") and never reaches the browser bundle.
 export async function connectRedis(url: string) {
-  const publisher = createClient({ url });
+  // While disconnected, fail publishes at once instead of queueing them. A queue would replay seconds of
+  // stale positions on reconnect, and the gateway couldn't tell the user that a command didn't go out.
+  const publisher = createClient({ url, disableOfflineQueue: true });
   publisher.on("error", logError);
   await publisher.connect();
 
   // A Redis connection in subscribe mode can't send other commands, so subscriptions get their own.
-  const subscriber = publisher.duplicate();
+  // This one keeps the offline queue, so a subscribe issued during a disconnect still happens.
+  const subscriber = createClient({ url });
   subscriber.on("error", logError);
   await subscriber.connect();
 
@@ -30,8 +33,8 @@ export async function connectRedis(url: string) {
   };
 
   const bus: Bus = {
-    publish(channel, message) {
-      publisher.publish(channel, Buffer.from(toBinary(BusMessageSchema, message))).catch(logError);
+    async publish(channel, message) {
+      await publisher.publish(channel, Buffer.from(toBinary(BusMessageSchema, message)));
     },
     subscribe(channel, handler) {
       const listener = (raw: Buffer) => {

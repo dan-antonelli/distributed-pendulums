@@ -36,7 +36,7 @@ interface Peer {
   lastSeenMs: number;
 }
 
-// One pendulum server's logic: its state machine and its part in the collision cycle.
+// One pendulum server's logic: its state machine and its part in the collision cycle (D20).
 // It knows nothing about Redis or the clock loop; main.ts wires those in. That keeps it testable on a fake bus.
 export class PendulumController {
   private phaseNow: PendulumPhase = STOPPED;
@@ -149,6 +149,21 @@ export class PendulumController {
 
     // A peer is already in a newer cycle, so we missed its STOP. Join now.
     if (IN_CYCLE.has(heartbeat.phase) && heartbeat.cycle > this.cycleNumber) this.joinCycle(heartbeat.cycle);
+
+    // A peer already running again in our cycle has finished it, so it had every RESTART and READY.
+    // Count both from it. Otherwise a server that joined late could wait forever for resends that have stopped.
+    if (IN_CYCLE.has(this.phaseNow) && heartbeat.phase === RUNNING && heartbeat.cycle === this.cycleNumber) {
+      this.restartsFrom.add(heartbeat.id);
+      this.readiesFrom.add(heartbeat.id);
+      this.advanceCycle();
+    }
+
+    // A peer is running in a newer cycle we never saw at all (our connection was down for the whole of it).
+    // Catch up the way everyone else did: take the cycle number and restart from the starting angle.
+    if ((this.phaseNow === RUNNING || this.phaseNow === PAUSED) && heartbeat.phase === RUNNING && heartbeat.cycle > this.cycleNumber) {
+      this.cycleNumber = heartbeat.cycle;
+      this.restart();
+    }
     this.updateNeighbors();
   }
 
@@ -335,7 +350,9 @@ export class PendulumController {
   }
 
   private publish(channel: string, body: MessageInitShape<typeof BusMessageSchema>["body"]): void {
-    this.bus.publish(channel, create(BusMessageSchema, { body }));
+    // A failed publish means Redis is unreachable; the client already logs that. Positions and heartbeats
+    // are resent many times a second and cycle messages every second, so nothing here needs a retry.
+    this.bus.publish(channel, create(BusMessageSchema, { body })).catch(() => {});
   }
 
   private startingMotion(): Motion {

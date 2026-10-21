@@ -1,4 +1,5 @@
-import { create } from "@bufbuild/protobuf";
+import { setTimeout as sleep } from "node:timers/promises";
+import { type MessageInitShape, create } from "@bufbuild/protobuf";
 import { Code, ConnectError, type ConnectRouter, type ServiceImpl } from "@connectrpc/connect";
 import {
   type Bus,
@@ -20,20 +21,34 @@ export const SNAPSHOT_INTERVAL_MS = 50;
 // The public API. Every command is validated here, then broadcast on the bus.
 // A successful response means "accepted and broadcast", not "applied": the bus has no replies.
 export function simulationService(bus: Bus, view: SystemView): ServiceImpl<typeof SimulationService> {
-  const command = (type: CommandType) => {
-    bus.publish(channels.control, create(BusMessageSchema, { body: { case: "command", value: { type } } }));
+  // Waits for Redis to accept the message, so a command never reports success while Redis is down.
+  const broadcast = async (body: MessageInitShape<typeof BusMessageSchema>["body"]) => {
+    try {
+      await bus.publish(channels.control, create(BusMessageSchema, { body }));
+    } catch {
+      throw new ConnectError("the message bus is unavailable, try again shortly", Code.Unavailable);
+    }
+  };
+  const command = async (type: CommandType) => {
+    await broadcast({ case: "command", value: { type } });
     return {};
   };
 
   return {
     async *watchPendulums(_request, context) {
-      while (!context.signal.aborted) {
-        yield { pendulums: view.snapshot() };
-        await wait(SNAPSHOT_INTERVAL_MS, context.signal);
+      try {
+        while (true) {
+          yield { pendulums: view.snapshot() };
+          // Node's abortable sleep cleans up after itself. A hand-written one leaked a listener per snapshot.
+          await sleep(SNAPSHOT_INTERVAL_MS, undefined, { signal: context.signal });
+        }
+      } catch (error) {
+        // The client went away: end the stream quietly. Anything else is a real error.
+        if (!context.signal.aborted) throw error;
       }
     },
 
-    updateConfig(request) {
+    async updateConfig(request) {
       const current = view.get(request.id);
       if (!current?.config) throw new ConnectError(`no pendulum with id ${request.id}`, Code.NotFound);
       // Best effort: this view can be a moment old. The pendulum server has the final say.
@@ -56,10 +71,8 @@ export function simulationService(bus: Bus, view: SystemView): ServiceImpl<typeo
       }
       if (problems.length > 0) throw new ConnectError(problems.join("; "), Code.InvalidArgument);
 
-      bus.publish(
-        channels.control,
-        create(BusMessageSchema, { body: { case: "configUpdate", value: { id: request.id, config } } }),
-      );
+      await broadcast({ case: "configUpdate", value: { id: request.id, config } });
+      view.rememberSentConfig(request.id, config);
       return {};
     },
 
@@ -79,15 +92,4 @@ function firstOverlap(id: number, config: PendulumConfig, others: Map<number, Pe
     if (otherId !== id && isTouching(bob, startingBob(other))) return otherId;
   }
   return undefined;
-}
-
-// Resolves after `ms`, or as soon as the client disconnects.
-function wait(ms: number, signal: AbortSignal): Promise<void> {
-  return new Promise((resolve) => {
-    const timer = setTimeout(resolve, ms);
-    signal.addEventListener("abort", () => {
-      clearTimeout(timer);
-      resolve();
-    }, { once: true });
-  });
 }

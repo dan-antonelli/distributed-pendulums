@@ -77,6 +77,35 @@ describe("joining a collision cycle", () => {
   });
 });
 
+describe("catching up after a dropped connection", () => {
+  test("a server that joined late still finishes once its peers have already restarted", () => {
+    // We join cycle 1 from a heartbeat, but the peers' RESTART and READY resends never reach us.
+    peers.heartbeat(2, WAITING, 1);
+    deliver();
+    expect(controller.phase).toBe(HALTED);
+
+    // Their next heartbeats show them running in cycle 1: they finished it, so they had everything.
+    peers.heartbeat(2, RUNNING, 1);
+    peers.heartbeat(3, RUNNING, 1);
+    deliver();
+    expect(controller.phase).toBe(WAITING);
+
+    vi.advanceTimersByTime(RESTART_DELAY_MS);
+    expect(controller.phase).toBe(RUNNING);
+  });
+
+  test("a server that missed a whole cycle adopts it and restarts from its starting angle", () => {
+    controller.tick(0.5);
+    expect(controller.angleRad).not.toBe(0.3);
+
+    peers.heartbeat(2, RUNNING, 3);
+    deliver();
+    expect(controller.cycle).toBe(3);
+    expect(controller.angleRad).toBe(0.3);
+    expect(controller.phase).toBe(RUNNING);
+  });
+});
+
 describe("the two rounds", () => {
   test("READY is sent only after RESTART from every participant", () => {
     haltInCycle1();

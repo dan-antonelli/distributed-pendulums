@@ -10,12 +10,16 @@ export const heartbeat = (id: number, phase = PendulumPhase.STOPPED, pendulumCon
 export const position = (id: number, bobXM: number, bobYM: number, phase = PendulumPhase.RUNNING) =>
   create(BusMessageSchema, { body: { case: "position", value: { id, bobXM, bobYM, phase } } });
 
-// Records what the gateway publishes, so tests can check it.
-export function recordingBus(): Bus & { published: BusMessage[] } {
+// Records what the gateway publishes, so tests can check it. Set `down` to make every publish fail, like Redis being unreachable.
+export function recordingBus(): Bus & { published: BusMessage[]; down: boolean } {
   const published: BusMessage[] = [];
   return {
     published,
-    publish: (_channel, message) => published.push(message),
+    down: false,
+    async publish(_channel, message) {
+      if (this.down) throw new Error("connection refused");
+      published.push(message);
+    },
     subscribe: () => {},
     unsubscribe: () => {},
     subscribePattern: () => {},

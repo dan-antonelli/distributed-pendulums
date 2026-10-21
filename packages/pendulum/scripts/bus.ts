@@ -12,8 +12,8 @@ const redis = await connectRedis(process.env.REDIS_URL ?? "redis://localhost:637
 
 if (action === "send" && name && name in commands) {
   const type = commands[name as keyof typeof commands];
-  redis.bus.publish(channels.control, create(BusMessageSchema, { body: { case: "command", value: { type } } }));
-  setTimeout(() => redis.close(), 100);
+  await redis.bus.publish(channels.control, create(BusMessageSchema, { body: { case: "command", value: { type } } }));
+  await redis.close();
 } else if (action === "watch") {
   for (const channel of [channels.heartbeat, channels.control]) {
     redis.bus.subscribe(channel, (message) => console.log(channel, JSON.stringify(toJson(BusMessageSchema, message))));
