@@ -123,9 +123,9 @@ npm test
 npm run typecheck
 ```
 
-There are 106 tests in 16 files. They cover the physics, collisions and neighbors, the state machine, a five-server collision cycle on an in-memory bus with fake timers, the gateway API through Connect's in-memory transport, and the UI's pure helpers. The five-server test covers a full cycle, two servers reporting the same collision, a lost RESTART, a server that missed the STOP, a server dying mid-cycle, and a user stop during the wait.
+There are 111 tests in 16 files. They cover the physics, collisions and neighbors, the state machine, a five-server collision cycle on an in-memory bus with fake timers, the gateway API through Connect's in-memory transport, and the UI's pure helpers. The five-server test covers a full cycle, two servers reporting the same collision, a lost RESTART, a server that missed the STOP, a server dying mid-cycle, and a user stop during the wait.
 
-The UI component tests run in jsdom with Testing Library against the real Connect client and an in-memory fake `SimulationService`. They cover the configuration table (edit, Apply, Reset, locking while running, Randomize applying in order), Start blocked by unapplied edits, the stage (bobs, collision status, zoom) and the app showing a streamed snapshot.
+The UI component tests run in jsdom with Testing Library against the real Connect client and an in-memory fake `SimulationService`. They cover the configuration table (edit, Apply, Reset, locking while running, Randomize applying in order), Start blocked by unapplied edits, Pause and Stop, the stage (bobs, collision status, zoom) and the app showing a streamed snapshot.
 
 ## Development without Docker
 

@@ -1,3 +1,4 @@
+import { PendulumPhase } from "@pendulums/shared";
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test } from "vitest";
@@ -25,6 +26,26 @@ describe("Controls", () => {
     await user.click(start());
 
     await waitFor(() => expect(fake.methods()).toEqual(["start"]));
+  });
+
+  test("Pause sends only Pause while running", async () => {
+    const user = userEvent.setup();
+    const fake = createFakeService();
+    renderWithTransport(<Panel pendulums={[view(1, { phase: PendulumPhase.RUNNING })]} />, fake);
+
+    await user.click(screen.getByRole("button", { name: "Pause" }));
+
+    await waitFor(() => expect(fake.methods()).toEqual(["pause"]));
+  });
+
+  test("Stop sends only Stop while running", async () => {
+    const user = userEvent.setup();
+    const fake = createFakeService();
+    renderWithTransport(<Panel pendulums={[view(1, { phase: PendulumPhase.RUNNING })]} />, fake);
+
+    await user.click(screen.getByRole("button", { name: "Stop" }));
+
+    await waitFor(() => expect(fake.methods()).toEqual(["stop"]));
   });
 
   test("Start is disabled with a hint while a draft is pending", async () => {

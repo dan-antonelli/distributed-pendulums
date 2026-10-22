@@ -25,6 +25,16 @@ describe("commands", () => {
     await client.start({});
     expect(lastPublished()).toMatchObject({ case: "command", value: { type: CommandType.START } });
   });
+
+  test("pause is broadcast to every pendulum as a PAUSE command", async () => {
+    await client.pause({});
+    expect(lastPublished()).toMatchObject({ case: "command", value: { type: CommandType.PAUSE } });
+  });
+
+  test("stop is broadcast to every pendulum as a STOP command", async () => {
+    await client.stop({});
+    expect(lastPublished()).toMatchObject({ case: "command", value: { type: CommandType.STOP } });
+  });
 });
 
 describe("resetConfig", () => {
@@ -44,6 +54,12 @@ describe("when Redis is down", () => {
   test("a command fails with UNAVAILABLE instead of reporting success", async () => {
     bus.down = true;
     await expect(client.start({})).rejects.toMatchObject({ code: Code.Unavailable });
+  });
+
+  test("pause and stop fail with UNAVAILABLE too", async () => {
+    bus.down = true;
+    await expect(client.pause({})).rejects.toMatchObject({ code: Code.Unavailable });
+    await expect(client.stop({})).rejects.toMatchObject({ code: Code.Unavailable });
   });
 
   test("a config change fails with UNAVAILABLE, and the gateway doesn't pretend it was applied", async () => {
