@@ -188,6 +188,7 @@ export class PendulumController {
   }
 
   private onCommand(type: CommandType): void {
+    const before = this.phaseNow;
     switch (type) {
       // Only a user stop can interrupt a collision cycle; start and pause are ignored.
       case CommandType.START:
@@ -204,6 +205,7 @@ export class PendulumController {
         if (this.phaseNow === STOPPED) this.applyConfig(defaultConfig(this.id));
         break;
     }
+    if (this.phaseNow !== before) this.publishHeartbeat();
   }
 
   private onConfigUpdate(update: ConfigUpdate): void {

@@ -1,4 +1,4 @@
-import { CommandType, PendulumPhase } from "@pendulums/shared";
+import { CommandType, PendulumPhase, channels } from "@pendulums/shared";
 import { InMemoryBus } from "@pendulums/shared/testing";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { HEARTBEAT_INTERVAL_MS, PEER_TIMEOUT_MS, PendulumController, RESTART_DELAY_MS } from "../src/controller";
@@ -7,12 +7,13 @@ import { actAs, config } from "./helpers";
 
 const { STOPPED, RUNNING, HALTED, READY, WAITING } = PendulumPhase;
 
+let bus: InMemoryBus;
 let controller: PendulumController;
 let peers: ReturnType<typeof actAs>;
 
 beforeEach(() => {
   vi.useFakeTimers();
-  const bus = new InMemoryBus();
+  bus = new InMemoryBus();
   controller = new PendulumController(1, config(0, 0.3), bus.connect("controller"));
   peers = actAs(bus.connect("test"));
   controller.start();
@@ -162,6 +163,20 @@ describe("user commands", () => {
     peers.command(CommandType.START);
     deliver();
     expect(controller.phase).toBe(HALTED);
+  });
+
+  test("a phase change from a command is announced at once, not at the next heartbeat", () => {
+    peers.command(CommandType.STOP);
+    deliver();
+    const phases: PendulumPhase[] = [];
+    bus.connect("watcher").subscribe(channels.heartbeat, ({ body }) => {
+      if (body.case === "heartbeat" && body.value.id === 1) phases.push(body.value.phase);
+    });
+
+    peers.command(CommandType.START);
+    vi.advanceTimersByTime(2);
+
+    expect(phases).toEqual([RUNNING]);
   });
 
   test("user stop during the wait cancels the restart", () => {
