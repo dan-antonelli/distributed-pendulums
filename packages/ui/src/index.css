@@ -39,7 +39,7 @@ body {
   align-items: flex-end;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 40px;
 }
 
 h1 {
@@ -83,6 +83,7 @@ h2 {
 }
 
 .controls {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -295,8 +296,16 @@ button.quiet:disabled {
   font-size: 0.875rem;
 }
 
+.top > .error {
+  margin-top: 12px;
+}
+
 .controls .hint {
-  flex-basis: 100%;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  white-space: nowrap;
 }
 
 .table-scroll {

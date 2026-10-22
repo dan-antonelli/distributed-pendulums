@@ -43,16 +43,18 @@ export function Controls({ state, pendulums, drafts }: { state: SystemState; pen
   );
 
   return (
-    <div className="controls">
-      {button("start", state === "paused" ? "Resume" : "Start")}
-      {button("pause", "Pause")}
-      {button("stop", "Stop")}
-      {blocked && (
-        <p id={hintId} className="hint">
-          Apply or reset your changes to start
-        </p>
-      )}
+    <>
+      <div className="controls">
+        {button("start", state === "paused" ? "Resume" : "Start")}
+        {button("pause", "Pause")}
+        {button("stop", "Stop")}
+        {blocked && (
+          <p id={hintId} className="hint">
+            Apply or reset your changes to start
+          </p>
+        )}
+      </div>
       {error && <p className="error" role="alert">{error}</p>}
-    </div>
+    </>
   );
 }
