@@ -91,7 +91,10 @@ I deliberately left out the wind bonus. I spent the time on the distributed logi
 
 - Redis is a single point of failure, and pub/sub doesn't store messages. If Redis goes down, servers keep swinging but can't coordinate.
 - If Redis goes down, commands from the UI fail with an "unavailable" error instead of reporting success. Positions and heartbeats are dropped rather than queued, and the servers reconnect and resubscribe on their own when Redis is back. I verified this on a real Redis: Start answered "unavailable" in about half a second while Redis was down, and after Redis came back the next collision cycle ran normally.
+- Publishing has no deadline. If Redis stalls with the connection still open, commands hang instead of failing with UNAVAILABLE.
+- Ids come from a Redis counter. If Redis restarts, the counter resets and a new server can get the id of a live one. Ids are also never reused.
 - A server stalled for more than 5 seconds is dropped from a cycle, and the others restart without it.
+- After a server crashes, its neighbors keep its last position for up to 5 seconds, which can cause a phantom collision.
 - The 5-second restart timers start a few milliseconds apart, not at the same instant.
 - A server that missed a STOP joins through heartbeats, and it can restart up to a few seconds after the others.
 - Collisions are checked once per tick, so two fast bobs could pass through each other between ticks. Strings aren't checked at all.
@@ -99,6 +102,8 @@ I deliberately left out the wind bonus. I spent the time on the distributed logi
 - There is one gateway. If it stops, the UI loses its view, but the simulation keeps running.
 - A new server starts stopped and waits for the next Start.
 - Containers run TypeScript with tsx, so the images include dev dependencies.
+- Containers have no restart policies.
+- There is no authentication, and CORS allows any origin by default.
 - There is no end-to-end test against real Redis.
 
 ## Things I found while building it
