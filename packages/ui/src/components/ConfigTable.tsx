@@ -1,7 +1,7 @@
 import { ConnectError } from "@connectrpc/connect";
 import { type PendulumView, PendulumPhase, limits } from "@pendulums/shared";
 import { useState } from "react";
-import { client } from "../client";
+import { useClient } from "../client";
 import { type Draft, changeOf, draftOf, readable } from "../scene";
 import type { Drafts } from "../useDrafts";
 
@@ -21,8 +21,9 @@ interface Range {
 }
 
 function Row({ pendulum, editable, anchorRange, drafts }: { pendulum: PendulumView; editable: boolean; anchorRange: Range; drafts: Drafts }) {
+  const client = useClient();
   const saved = draftOf(pendulum);
-  const draft = drafts.drafts[pendulum.id];
+  const draft =drafts.drafts[pendulum.id];
   const error = drafts.errors[pendulum.id];
   const setDraft = (next: Draft | undefined) => drafts.setDraft(pendulum.id, next);
   const setError = (next: string | undefined) => drafts.setError(pendulum.id, next);
@@ -88,12 +89,13 @@ function Row({ pendulum, editable, anchorRange, drafts }: { pendulum: PendulumVi
         <td className="col-edge">
           {/* Both always rendered, so the cell never changes shape. */}
           <div className="row-actions">
-            <button type="button" disabled={!editable || !changed} onClick={apply}>
+            <button type="button" aria-label={`Apply, pendulum ${pendulum.id}`} disabled={!editable || !changed} onClick={apply}>
               Apply
             </button>
             <button
               type="button"
               className="quiet"
+              aria-label={`Reset, pendulum ${pendulum.id}`}
               disabled={!changed}
               onClick={() => (setDraft(undefined), setError(undefined))}
             >
@@ -121,6 +123,7 @@ function anchorRangeOf(pendulums: PendulumView[]): Range {
 }
 
 export function ConfigTable({ pendulums, editable, drafts }: { pendulums: PendulumView[]; editable: boolean; drafts: Drafts }) {
+  const client = useClient();
   const anchorRange = anchorRangeOf(pendulums);
   const [resetError, setResetError] = useState<string>();
 

@@ -96,7 +96,6 @@ I deliberately left out the wind bonus. I spent the time on the distributed logi
 - A new server starts stopped and waits for the next Start.
 - Containers run TypeScript with tsx, so the images include dev dependencies.
 - There is no end-to-end test against real Redis.
-- The UI's pure helpers have unit tests, but there are no component or browser tests.
 
 ## Things I found while building it
 
@@ -120,7 +119,9 @@ npm test
 npm run typecheck
 ```
 
-There are 82 tests in 12 files. They cover the physics, collisions and neighbors, the state machine, a five-server collision cycle on an in-memory bus with fake timers, the gateway API through Connect's in-memory transport, and the UI's pure helpers. The five-server test covers a full cycle, two servers reporting the same collision, a lost RESTART, a server that missed the STOP, a server dying mid-cycle, and a user stop during the wait.
+There are 97 tests in 16 files. They cover the physics, collisions and neighbors, the state machine, a five-server collision cycle on an in-memory bus with fake timers, the gateway API through Connect's in-memory transport, and the UI's pure helpers. The five-server test covers a full cycle, two servers reporting the same collision, a lost RESTART, a server that missed the STOP, a server dying mid-cycle, and a user stop during the wait.
+
+The UI component tests run in jsdom with Testing Library against the real Connect client and an in-memory fake `SimulationService`. They cover the configuration table (edit, Apply, Reset, locking while running), Start applying pending edits, the stage (bobs, collision status, zoom) and the app showing a streamed snapshot.
 
 ## Development without Docker
 
@@ -140,5 +141,5 @@ To talk to the bus without the UI, `npm run bus -w @pendulums/pendulum -- send s
 - An end-to-end test that runs real servers against real Redis through a full collision cycle.
 - nginx proxying the API on the same origin as the UI, which removes CORS and the gateway URL baked into the build.
 - Compiled production images with only runtime dependencies.
-- Component tests for the configuration table with Testing Library, and a small Playwright suite for layout checks against the running stack.
+- A small Playwright suite for layout checks against the running stack.
 - Wind, as one more term in the physics step and one more broadcast setting.

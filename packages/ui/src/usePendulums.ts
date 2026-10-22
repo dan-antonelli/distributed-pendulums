@@ -1,6 +1,6 @@
 import type { PendulumView } from "@pendulums/shared";
 import { useEffect, useState } from "react";
-import { client } from "./client";
+import { useClient } from "./client";
 
 export type Connection = "connecting" | "live" | "reconnecting";
 
@@ -8,6 +8,7 @@ const MAX_RETRY_DELAY_MS = 8000;
 
 // Every new stream starts with a full snapshot, so reconnecting loses nothing.
 export function usePendulums() {
+  const client = useClient();
   const [pendulums, setPendulums] = useState<PendulumView[]>([]);
   const [connection, setConnection] = useState<Connection>("connecting");
 
@@ -34,7 +35,7 @@ export function usePendulums() {
 
     void listen();
     return () => abort.abort();
-  }, []);
+  }, [client]);
 
   return { pendulums, connection };
 }

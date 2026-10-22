@@ -1,7 +1,7 @@
 import { ConnectError } from "@connectrpc/connect";
 import { useState } from "react";
 import type { PendulumView } from "@pendulums/shared";
-import { client } from "../client";
+import { useClient } from "../client";
 import { type SystemState, pendingUpdates, readable } from "../scene";
 import type { Drafts } from "../useDrafts";
 
@@ -16,6 +16,7 @@ const enabled: Record<SystemState, Action[]> = {
 };
 
 export function Controls({ state, pendulums, drafts }: { state: SystemState; pendulums: PendulumView[]; drafts: Drafts }) {
+  const client = useClient();
   const [error, setError] = useState<string>();
   const [applying, setApplying] = useState(false);
 
