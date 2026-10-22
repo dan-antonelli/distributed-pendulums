@@ -2,7 +2,7 @@
 
 A pendulum simulation where every pendulum runs in its own server process, and the servers coordinate over Redis to stop together on a collision and restart together. A React UI shows the pendulums live, starts and stops the simulation, and edits each pendulum's settings.
 
-Randomize fills valid random drafts, which makes it quick to trigger and watch the collision cycle.
+Randomize applies a valid random configuration right away, which makes it quick to trigger and watch the collision cycle. Manual edits must be applied or reset before Start.
 
 ## Quick start
 
@@ -121,9 +121,9 @@ npm test
 npm run typecheck
 ```
 
-There are 104 tests in 16 files. They cover the physics, collisions and neighbors, the state machine, a five-server collision cycle on an in-memory bus with fake timers, the gateway API through Connect's in-memory transport, and the UI's pure helpers. The five-server test covers a full cycle, two servers reporting the same collision, a lost RESTART, a server that missed the STOP, a server dying mid-cycle, and a user stop during the wait.
+There are 105 tests in 16 files. They cover the physics, collisions and neighbors, the state machine, a five-server collision cycle on an in-memory bus with fake timers, the gateway API through Connect's in-memory transport, and the UI's pure helpers. The five-server test covers a full cycle, two servers reporting the same collision, a lost RESTART, a server that missed the STOP, a server dying mid-cycle, and a user stop during the wait.
 
-The UI component tests run in jsdom with Testing Library against the real Connect client and an in-memory fake `SimulationService`. They cover the configuration table (edit, Apply, Reset, locking while running), Start applying pending edits, the stage (bobs, collision status, zoom) and the app showing a streamed snapshot.
+The UI component tests run in jsdom with Testing Library against the real Connect client and an in-memory fake `SimulationService`. They cover the configuration table (edit, Apply, Reset, locking while running, Randomize applying in order), Start blocked by unapplied edits, the stage (bobs, collision status, zoom) and the app showing a streamed snapshot.
 
 ## Development without Docker
 

@@ -2,8 +2,8 @@ import { ConnectError } from "@connectrpc/connect";
 import { type PendulumView, PendulumPhase, limits } from "@pendulums/shared";
 import { useState } from "react";
 import { useClient } from "../client";
-import { type Draft, type Range, anchorRangeOf, changeOf, draftOf, randomDrafts, readable } from "../scene";
-import type { Drafts } from "../useDrafts";
+import { type Draft, type Range, anchorRangeOf, changeOf, draftOf, pendingUpdates, randomDrafts, readable } from "../scene";
+import { type Drafts, applyInOrder } from "../useDrafts";
 
 const phaseLabel: Record<PendulumPhase, string> = {
   [PendulumPhase.UNSPECIFIED]: "Unknown",
@@ -114,6 +114,7 @@ export function ConfigTable({ pendulums, editable, drafts }: { pendulums: Pendul
   const client = useClient();
   const anchorRange = anchorRangeOf(pendulums);
   const [configError, setConfigError] = useState<string>();
+  const [randomizing, setRandomizing] = useState(false);
 
   async function resetToDefaults() {
     setConfigError(undefined);
@@ -125,14 +126,21 @@ export function ConfigTable({ pendulums, editable, drafts }: { pendulums: Pendul
     }
   }
 
-  function randomize() {
+  async function randomize() {
     const random = randomDrafts(pendulums, Math.random);
     if (!random) {
       setConfigError("Couldn't find a valid random configuration. Try again.");
       return;
     }
     setConfigError(undefined);
-    drafts.replaceAll(random);
+    const updates = pendingUpdates(random, pendulums);
+    drafts.replaceAll(Object.fromEntries(updates.map((u) => [u.id, random[u.id]!])));
+    setRandomizing(true);
+    try {
+      await applyInOrder(client, drafts, updates);
+    } finally {
+      setRandomizing(false);
+    }
   }
 
   return (
@@ -141,7 +149,7 @@ export function ConfigTable({ pendulums, editable, drafts }: { pendulums: Pendul
         <h2 id="config-title">Configuration</h2>
         {!editable && <p className="hint">Stop the simulation to change settings.</p>}
         <div className="config-actions">
-          <button type="button" disabled={!editable} onClick={randomize}>
+          <button type="button" disabled={!editable || randomizing} onClick={randomize}>
             Randomize
           </button>
           <button type="button" disabled={!editable} onClick={resetToDefaults}>

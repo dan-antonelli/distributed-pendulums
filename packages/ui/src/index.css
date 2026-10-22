@@ -295,6 +295,10 @@ button.quiet:disabled {
   font-size: 0.875rem;
 }
 
+.controls .hint {
+  flex-basis: 100%;
+}
+
 .table-scroll {
   position: relative;
   overflow-x: auto;

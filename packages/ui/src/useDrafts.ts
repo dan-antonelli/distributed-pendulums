@@ -1,5 +1,7 @@
+import { ConnectError } from "@connectrpc/connect";
 import { useState } from "react";
-import type { Draft } from "./scene";
+import type { useClient } from "./client";
+import { type ConfigChange, type Draft, readable } from "./scene";
 
 type ById<T> = Record<number, T>;
 
@@ -30,3 +32,17 @@ export function useDrafts() {
 }
 
 export type Drafts = ReturnType<typeof useDrafts>;
+
+export async function applyInOrder(client: ReturnType<typeof useClient>, drafts: Drafts, updates: ConfigChange[]): Promise<boolean> {
+  for (const update of updates) {
+    drafts.setError(update.id, undefined);
+    try {
+      await client.updateConfig(update);
+      drafts.setDraft(update.id, undefined);
+    } catch (e) {
+      drafts.setError(update.id, readable(ConnectError.from(e).rawMessage));
+      return false;
+    }
+  }
+  return true;
+}

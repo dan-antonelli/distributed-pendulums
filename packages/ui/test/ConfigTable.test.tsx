@@ -10,6 +10,7 @@ const apply = (id: number) => screen.getByRole("button", { name: `Apply, pendulu
 const reset = (id: number) => screen.getByRole("button", { name: `Reset, pendulum ${id}` });
 const resetToDefaults = () => screen.getByRole("button", { name: "Reset to defaults" });
 const randomize = () => screen.getByRole("button", { name: "Randomize" });
+const start = () => screen.getByRole("button", { name: "Start" });
 
 async function setLength(user: ReturnType<typeof userEvent.setup>, id: number, value: string) {
   await user.clear(length(id));
@@ -90,28 +91,49 @@ describe("ConfigTable", () => {
       vi.restoreAllMocks();
     });
 
-    test("fills drafts for every row without calling the server", async () => {
+    test("sends UpdateConfig for every row in id order", async () => {
       const user = userEvent.setup();
       const fake = createFakeService();
-      renderWithTransport(<Panel pendulums={[view(1), view(2)]} />, fake);
+      renderWithTransport(<Panel pendulums={[view(2), view(1)]} />, fake);
 
       await user.click(randomize());
 
-      expect(apply(1)).toBeEnabled();
-      expect(apply(2)).toBeEnabled();
-      expect(fake.calls).toEqual([]);
+      await waitFor(() => expect(fake.methods()).toEqual(["updateConfig", "updateConfig"]));
+      expect(fake.calls.map((call) => call.request.id)).toEqual([1, 2]);
+      await waitFor(() => expect(start()).toBeEnabled());
+      expect(apply(1)).toBeDisabled();
+      expect(apply(2)).toBeDisabled();
     });
 
-    test("Start after Randomize sends UpdateConfig for the changed rows, then Start", async () => {
+    test("a rejected random row stops the run, keeps its draft and shows its error", async () => {
       const user = userEvent.setup();
       const fake = createFakeService();
+      fake.failUpdate(1, "anchor_x_m overlaps pendulum 2");
       renderWithTransport(<Panel pendulums={[view(1), view(2)]} />, fake);
 
       await user.click(randomize());
-      await user.click(screen.getByRole("button", { name: "Start" }));
 
-      await waitFor(() => expect(fake.methods()).toEqual(["updateConfig", "updateConfig", "start"]));
-      expect(fake.calls.slice(0, 2).map((call) => call.request.id)).toEqual([1, 2]);
+      expect(await screen.findByRole("alert")).toHaveTextContent("Pendulum 1: Anchor overlaps pendulum 2");
+      expect(fake.methods()).toEqual(["updateConfig"]);
+      expect(apply(1)).toBeEnabled();
+      expect(start()).toBeDisabled();
+    });
+
+    test("Randomize and Start are disabled while applying", async () => {
+      const user = userEvent.setup();
+      const fake = createFakeService();
+      const release = fake.holdUpdates();
+      renderWithTransport(<Panel pendulums={[view(1), view(2)]} />, fake);
+
+      await user.click(randomize());
+      await waitFor(() => expect(fake.methods()).toEqual(["updateConfig"]));
+      expect(randomize()).toBeDisabled();
+      expect(start()).toBeDisabled();
+
+      release();
+      await waitFor(() => expect(fake.methods()).toEqual(["updateConfig", "updateConfig"]));
+      await waitFor(() => expect(randomize()).toBeEnabled());
+      expect(start()).toBeEnabled();
     });
 
     test("is disabled while running", () => {

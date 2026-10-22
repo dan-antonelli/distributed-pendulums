@@ -58,8 +58,10 @@ export function changeOf(id: number, draft: Draft, saved: Draft): ConfigChange |
   return Object.keys(change).length > 1 ? change : undefined;
 }
 
+const byId = (pendulums: PendulumView[]) => [...pendulums].sort((a, b) => a.id - b.id);
+
 export function pendingUpdates(drafts: Record<number, Draft>, pendulums: PendulumView[]): ConfigChange[] {
-  return pendulums.flatMap((p) => {
+  return byId(pendulums).flatMap((p) => {
     const draft = drafts[p.id];
     const change = draft && p.config ? changeOf(p.id, draft, draftOf(p)) : undefined;
     return change ? [change] : [];
@@ -97,7 +99,7 @@ const configOf = (draft: Draft) =>
     initialAngleRad: radians(Number(draft.angle)),
   });
 
-// Start applies rows one at a time and the gateway checks each against the configs it has then,
+// Randomize applies rows one at a time in id order and the gateway checks each against the configs it has then,
 // so every intermediate state must be overlap-free, not just the final one.
 function appliesInOrder(rows: PendulumView[], drafts: Record<number, Draft>): boolean {
   const configs = new Map<number, PendulumConfig>(rows.map((p) => [p.id, p.config!]));
@@ -114,7 +116,7 @@ export function randomDrafts(
   random: () => number,
   attempts = 50,
 ): Record<number, Draft> | undefined {
-  const rows = pendulums.filter((p) => p.config);
+  const rows = byId(pendulums).filter((p) => p.config);
   const anchors = anchorRangeOf(pendulums);
   const angles = { min: degrees(limits.angleRad.min), max: degrees(limits.angleRad.max) };
   for (let attempt = 0; attempt < attempts; attempt++) {

@@ -90,7 +90,7 @@ describe("pendingUpdates", () => {
     expect(pendingUpdates({ 1: draft(p, { length: "2" }) }, [p])).toEqual([{ id: 1, lengthM: 2 }]);
   });
 
-  test("several rows come back in pendulum order, skipping unchanged ones", () => {
+  test("several rows come back in id order, skipping unchanged ones", () => {
     const [a, b, c] = [view(1), view(2), view(3)];
     const drafts = { 3: draft(c, { mass: "4" }), 1: draft(a, { angle: "90" }), 2: draft(b) };
     expect(pendingUpdates(drafts, [a, b, c])).toEqual([
