@@ -20,22 +20,7 @@ Open http://localhost:5173 and press Start. About a second later, two neighborin
 
 ## Architecture
 
-```mermaid
-flowchart LR
-  B["Browser<br>React UI"]
-  G["Gateway<br>Node, Connect"]
-  R[("Redis<br>pub/sub")]
-  subgraph S["N pendulum servers"]
-    P1["Pendulum 1"]
-    P2["Pendulum 2"]
-    PN["Pendulum N"]
-  end
-  B -- "gRPC via Connect:<br>WatchPendulums stream (snapshot every 50 ms)<br>UpdateConfig, ResetConfig, Start, Pause, Stop" --> G
-  G -- "protobuf on pendulums:control<br>(commands, config updates)" --> R
-  R -- "pendulums:heartbeat<br>pendulums:*:position" --> G
-  S -- "protobuf: own position 60/s on pendulums:{id}:position<br>heartbeat 5/s on pendulums:heartbeat<br>STOP, RESTART, READY on pendulums:control" --> R
-  R -- "heartbeats, control messages,<br>positions of neighbors only" --> S
-```
+![Architecture: the browser calls the gateway over Connect and streams snapshots every 50 ms. The gateway publishes commands and config on pendulums:control and listens to heartbeats and all positions. Each pendulum server publishes its own position 60 times a second, a heartbeat 5 times a second, and STOP, RESTART and READY on pendulums:control, and receives heartbeats, control messages and only its neighbors' positions.](docs/architecture.svg)
 
 Each pendulum server runs the physics at 60 steps a second and publishes its bob position on its own channel. Five times a second it publishes a heartbeat with its id, config, phase and cycle number. Servers never call each other. They only know Redis. The gateway listens to the same traffic, keeps the latest state of every pendulum in memory, and streams a snapshot to each browser every 50 ms. Commands from the UI are validated in the gateway and broadcast on the control channel. All messages on Redis are binary protobuf, from the same `.proto` files as the API.
 
@@ -50,6 +35,10 @@ Two bobs touch when their centers are closer than their radii added together, wh
 5. It resets to its configured starting angle and runs again.
 
 RESTART and READY are resent every second until the cycle ends. Messages from an older cycle are ignored. A user Stop cancels the cycle at any point.
+
+![Collision cycle on three servers: server 1 detects a collision and sends STOP with cycle n to all, and all halt. Every server sends RESTART to all. With RESTART from all, each sends READY. With READY from all, each waits 5 seconds, then resets to its starting angle and runs.](docs/collision-cycle.svg)
+
+![Pendulum phases: START moves STOPPED to RUNNING, PAUSE and START move between RUNNING and PAUSED, a collision or a newer cycle moves RUNNING to HALTED, RESTART from all moves HALTED to READY, READY from all moves READY to WAITING, and after 5 seconds WAITING returns to RUNNING. The STOP command returns any phase to STOPPED.](docs/pendulum-states.svg)
 
 ### Repo layout
 
@@ -66,6 +55,8 @@ RESTART and READY are resent every second until the cycle ends. Messages from an
 **Two rounds with a cycle number.** The task says each pendulum waits until all instances have received RESTART from all others. Collecting RESTART from everyone only proves that I have them all. The READY round proves that everyone else does too. It looks like two-phase commit, but nothing is saved or rolled back. It's a barrier. The cycle number makes duplicates and late messages harmless, and two servers that detect the same collision at the same moment send the same number, so it stays one cycle. The cost is one more message type and phase.
 
 **Neighbors are the pendulums within reach.** A bob is never further from its anchor than its string length. So if two anchors are further apart than both strings plus both radii, those bobs can never touch. Everyone closer is a neighbor, including a long pendulum that can swing past the one next to it. Each server subscribes only to its neighbors' position channels. My first plan sent every position on one shared channel to every server. When I counted messages, each server's intake grew with the total and Redis traffic grew with the square of it. At 50 servers, my first design would have needed about 147,000 message deliveries a second (calculated, not measured), for each server to check two neighbors. The cost of the fix is resubscribing when neighbors change, which only happens while stopped or when servers join or leave.
+
+![Five pendulums 1.5 m apart with 1 m strings. Server 3 subscribes only to pendulums:2:position and pendulums:4:position, whose anchors are within its 2.2 m reach. Pendulums 1 and 5 are out of reach.](docs/neighbor-subscriptions.svg)
 
 **Membership from heartbeats, frozen at STOP.** When a cycle starts, each server takes a snapshot of every peer heard from in the last 5 seconds. Servers that join later don't change who it waits for. A participant silent for 5 seconds is dropped, and the rest finish without it. This is a choice between safety and progress: wait forever for a server that might be dead, or move on without it. I chose progress after 5 seconds.
 

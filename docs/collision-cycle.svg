@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" width="900" height="560" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#1f2328">
+  <defs>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#d1242f"/>
+    </marker>
+  </defs>
+  <rect width="900" height="560" fill="#ffffff"/>
+
+  <g stroke="#57606a" stroke-width="1.5">
+    <rect x="135" y="24" width="130" height="40" rx="8" fill="#f6f8fa"/>
+    <rect x="345" y="24" width="130" height="40" rx="8" fill="#f6f8fa"/>
+    <rect x="555" y="24" width="130" height="40" rx="8" fill="#f6f8fa"/>
+  </g>
+  <g text-anchor="middle" font-weight="600">
+    <text x="200" y="49">Server 1</text>
+    <text x="410" y="49">Server 2</text>
+    <text x="620" y="49">Server 3</text>
+  </g>
+
+  <g stroke="#8c959f" stroke-width="1.5" stroke-dasharray="5 5">
+    <line x1="200" y1="64" x2="200" y2="440"/>
+    <line x1="410" y1="64" x2="410" y2="440"/>
+    <line x1="620" y1="64" x2="620" y2="440"/>
+  </g>
+
+  <circle cx="200" cy="100" r="7" fill="#d1242f"/>
+  <text x="184" y="105" text-anchor="end" fill="#d1242f">collision detected</text>
+
+  <g stroke="#d1242f" stroke-width="1.5" fill="none" marker-end="url(#arrow-accent)">
+    <line x1="200" y1="134" x2="406" y2="134"/>
+    <line x1="200" y1="150" x2="616" y2="150"/>
+
+    <line x1="200" y1="204" x2="616" y2="204"/>
+    <line x1="410" y1="220" x2="204" y2="220"/>
+    <line x1="410" y1="220" x2="616" y2="220"/>
+    <line x1="620" y1="236" x2="204" y2="236"/>
+
+    <line x1="200" y1="294" x2="616" y2="294"/>
+    <line x1="410" y1="310" x2="204" y2="310"/>
+    <line x1="410" y1="310" x2="616" y2="310"/>
+    <line x1="620" y1="326" x2="204" y2="326"/>
+  </g>
+
+  <g fill="#d1242f">
+    <circle cx="200" cy="134" r="4"/>
+    <circle cx="200" cy="150" r="4"/>
+    <circle cx="200" cy="204" r="4"/>
+    <circle cx="410" cy="220" r="4"/>
+    <circle cx="620" cy="236" r="4"/>
+    <circle cx="200" cy="294" r="4"/>
+    <circle cx="410" cy="310" r="4"/>
+    <circle cx="620" cy="326" r="4"/>
+  </g>
+
+  <g text-anchor="middle" fill="#d1242f">
+    <text x="305" y="126">STOP (cycle n)</text>
+    <text x="410" y="192">RESTART (cycle n), every server to all</text>
+    <text x="410" y="282">READY (cycle n), every server to all</text>
+  </g>
+
+  <g fill="#57606a">
+    <text x="684" y="155">all HALTED</text>
+    <text x="684" y="241">RESTART from all → READY</text>
+    <text x="684" y="331">READY from all → WAITING</text>
+    <text x="684" y="427">reset to starting angle</text>
+  </g>
+
+  <rect x="150" y="352" width="490" height="40" rx="8" fill="#ffffff" stroke="#57606a" stroke-width="1.5"/>
+  <text x="395" y="377" text-anchor="middle">5 s wait (RESTART_DELAY_MS)</text>
+
+  <g stroke="#57606a" stroke-width="1.5" fill="#f6f8fa">
+    <rect x="160" y="406" width="80" height="30" rx="6"/>
+    <rect x="370" y="406" width="80" height="30" rx="6"/>
+    <rect x="580" y="406" width="80" height="30" rx="6"/>
+  </g>
+  <g text-anchor="middle" font-size="13" font-weight="600">
+    <text x="200" y="426">RUNNING</text>
+    <text x="410" y="426">RUNNING</text>
+    <text x="620" y="426">RUNNING</text>
+  </g>
+
+  <g fill="#57606a">
+    <text x="40" y="482">RESTART and READY are resent every 1 s (RESEND_INTERVAL_MS) until the cycle ends.</text>
+    <text x="40" y="504">Participants are the peers heard from in the last 5 s that aren't stopped, frozen at STOP.</text>
+    <text x="40" y="526">A participant silent for 5 s (PEER_TIMEOUT_MS) is dropped, and the rest finish without it.</text>
+  </g>
+</svg>

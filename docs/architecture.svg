@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 460" width="900" height="460" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#1f2328">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#57606a"/>
+    </marker>
+  </defs>
+  <rect width="900" height="460" fill="#ffffff"/>
+
+  <g stroke="#57606a" stroke-width="1.5">
+    <rect x="40" y="50" width="200" height="80" rx="8" fill="#f6f8fa"/>
+    <rect x="560" y="50" width="180" height="80" rx="8" fill="#f6f8fa"/>
+    <rect x="560" y="330" width="180" height="90" rx="8" fill="#f6f8fa"/>
+    <rect x="52" y="318" width="200" height="90" rx="8" fill="#f6f8fa"/>
+    <rect x="46" y="324" width="200" height="90" rx="8" fill="#f6f8fa"/>
+    <rect x="40" y="330" width="200" height="90" rx="8" fill="#f6f8fa"/>
+  </g>
+
+  <g text-anchor="middle">
+    <text x="140" y="86" font-size="16" font-weight="600">Browser</text>
+    <text x="140" y="108" fill="#57606a">React UI</text>
+    <text x="650" y="86" font-size="16" font-weight="600">Gateway</text>
+    <text x="650" y="108" fill="#57606a">Node, Connect</text>
+    <text x="650" y="370" font-size="16" font-weight="600">Redis</text>
+    <text x="650" y="392" fill="#57606a">pub/sub</text>
+    <text x="140" y="370" font-size="16" font-weight="600">N pendulum servers</text>
+    <text x="140" y="392" fill="#57606a">one pendulum each</text>
+  </g>
+
+  <g stroke="#57606a" stroke-width="1.5" fill="none" marker-end="url(#arrow)">
+    <line x1="242" y1="78" x2="556" y2="78"/>
+    <line x1="558" y1="104" x2="244" y2="104"/>
+    <line x1="600" y1="132" x2="600" y2="326"/>
+    <line x1="710" y1="328" x2="710" y2="134"/>
+    <line x1="262" y1="358" x2="556" y2="358"/>
+    <line x1="558" y1="390" x2="264" y2="390"/>
+  </g>
+
+  <g text-anchor="middle">
+    <text x="400" y="48">UpdateConfig, ResetConfig,</text>
+    <text x="400" y="66">Start, Pause, Stop</text>
+    <text x="400" y="126">WatchPendulums stream</text>
+    <text x="400" y="144" fill="#57606a">snapshot every 50 ms</text>
+  </g>
+
+  <g text-anchor="end">
+    <text x="590" y="222">pendulums:control</text>
+    <text x="590" y="240" fill="#57606a">commands, config</text>
+  </g>
+  <g>
+    <text x="722" y="222">pendulums:heartbeat</text>
+    <text x="722" y="240">pendulums:*:position</text>
+  </g>
+
+  <g text-anchor="middle">
+    <text x="409" y="306">pendulums:{id}:position · 60/s</text>
+    <text x="409" y="324">pendulums:heartbeat · 5/s</text>
+    <text x="409" y="342" fill="#d1242f">pendulums:control · STOP, RESTART, READY</text>
+    <text x="409" y="412">heartbeats, control</text>
+    <text x="409" y="430" fill="#57606a">neighbors' positions only</text>
+  </g>
+</svg>
