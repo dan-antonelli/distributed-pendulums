@@ -134,6 +134,10 @@ button.quiet {
   color: var(--graphite);
 }
 
+.is-hidden {
+  visibility: hidden;
+}
+
 .error {
   flex-basis: 100%;
   margin: 0;
@@ -323,8 +327,8 @@ tbody th {
   font-weight: 700;
 }
 
-input {
-  width: 6.5em;
+input[type="number"] {
+  width: 100%;
   padding: 6px 8px;
   border: 1px solid var(--rule);
   border-radius: var(--radius-control);
@@ -333,10 +337,29 @@ input {
   font: inherit;
 }
 
-input:disabled {
+input[type="number"]:disabled {
   background: transparent;
   border-color: transparent;
   color: var(--ink);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 8em;
+}
+
+input[type="range"] {
+  width: 100%;
+  margin: 0;
+  accent-color: var(--signal);
+  cursor: pointer;
+}
+
+input[type="range"]:disabled {
+  accent-color: var(--rule);
+  cursor: not-allowed;
 }
 
 .phase {

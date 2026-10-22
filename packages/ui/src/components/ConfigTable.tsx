@@ -38,27 +38,50 @@ function draftOf(p: PendulumView): Draft {
   return { anchor: round(c.anchorXM), length: round(c.lengthM), mass: round(c.massKg), angle: String(degrees(c.initialAngleRad)) };
 }
 
-function Row({ pendulum, editable }: { pendulum: PendulumView; editable: boolean }) {
+interface Range {
+  min: number;
+  max: number;
+}
+
+function Row({ pendulum, editable, anchorRange }: { pendulum: PendulumView; editable: boolean; anchorRange: Range }) {
   const saved = draftOf(pendulum);
   const [draft, setDraft] = useState<Draft>();
   const [error, setError] = useState<string>();
   const shown = draft ?? saved;
 
-  const field = (key: keyof Draft, label: string, min: number, max: number, step: number) => (
-    <td>
-      <input
-        aria-label={`${label}, pendulum ${pendulum.id}`}
-        type="number"
-        inputMode="decimal"
-        min={min}
-        max={max}
-        step={step}
-        value={shown[key]}
-        disabled={!editable}
-        onChange={(e) => setDraft({ ...shown, [key]: e.target.value })}
-      />
-    </td>
-  );
+  // A box for an exact value, with a slider under it for quick adjustment, both editing the same draft.
+  // While the box holds something that isn't a number yet (mid-typing), the slider shows the saved value.
+  const field = (key: keyof Draft, label: string, range: Range, step: number) => {
+    const update = (value: string) => setDraft({ ...shown, [key]: value });
+    const sliderValue = Number.isFinite(Number.parseFloat(shown[key])) ? shown[key] : saved[key];
+    return (
+      <td>
+        <div className="field">
+          <input
+            aria-label={`${label}, pendulum ${pendulum.id}`}
+            type="number"
+            inputMode="decimal"
+            min={range.min}
+            max={range.max}
+            step={step}
+            value={shown[key]}
+            disabled={!editable}
+            onChange={(e) => update(e.target.value)}
+          />
+          <input
+            aria-label={`${label}, pendulum ${pendulum.id}, slider`}
+            type="range"
+            min={range.min}
+            max={range.max}
+            step={step}
+            value={sliderValue}
+            disabled={!editable}
+            onChange={(e) => update(e.target.value)}
+          />
+        </div>
+      </td>
+    );
+  };
 
   async function apply() {
     if (!draft) return;
@@ -84,20 +107,29 @@ function Row({ pendulum, editable }: { pendulum: PendulumView; editable: boolean
     <>
       <tr>
         <th scope="row">{pendulum.id}</th>
-        {field("anchor", "Anchor position in meters", -50, 50, 0.1)}
-        {field("length", "String length in meters", limits.lengthM.min, limits.lengthM.max, 0.1)}
-        {field("mass", "Mass in kilograms", limits.massKg.min, limits.massKg.max, 0.1)}
-        {field("angle", "Starting angle in degrees", -90, 90, 1)}
+        {field("anchor", "Anchor position in meters", anchorRange, 0.05)}
+        {field("length", "String length in meters", limits.lengthM, 0.05)}
+        {field("mass", "Mass in kilograms", limits.massKg, 0.1)}
+        {field("angle", "Starting angle in degrees", { min: -90, max: 90 }, 1)}
         <td className="phase">{phaseLabel[pendulum.phase]}</td>
-        <td className="row-actions">
-          <button type="button" disabled={!editable || !changed} onClick={apply}>
-            Apply
-          </button>
-          {changed && (
-            <button type="button" className="quiet" onClick={() => (setDraft(undefined), setError(undefined))}>
+        <td>
+          <div className="row-actions">
+            <button type="button" disabled={!editable || !changed} onClick={apply}>
+              Apply
+            </button>
+            {/* Always rendered, only hidden: if it came and went, the table would re-measure its columns
+                and everything would jump each time a slider crossed the saved value. */}
+            <button
+              type="button"
+              className={changed ? "quiet" : "quiet is-hidden"}
+              disabled={!changed}
+              aria-hidden={!changed}
+              tabIndex={changed ? 0 : -1}
+              onClick={() => (setDraft(undefined), setError(undefined))}
+            >
               Reset
             </button>
-          )}
+          </div>
         </td>
       </tr>
       {error && (
@@ -111,7 +143,16 @@ function Row({ pendulum, editable }: { pendulum: PendulumView; editable: boolean
   );
 }
 
+// The anchor slider spans the array plus 2 m on each side, from the saved configs, so it doesn't jump while dragging.
+// The box still accepts any position further out.
+function anchorRangeOf(pendulums: PendulumView[]): Range {
+  const anchors = pendulums.flatMap((p) => (p.config ? [p.config.anchorXM] : []));
+  if (anchors.length === 0) return { min: 0, max: 5 };
+  return { min: Math.floor(Math.min(...anchors) - 2), max: Math.ceil(Math.max(...anchors) + 2) };
+}
+
 export function ConfigTable({ pendulums, editable }: { pendulums: PendulumView[]; editable: boolean }) {
+  const anchorRange = anchorRangeOf(pendulums);
   return (
     <section className="config" aria-labelledby="config-title">
       <div className="config-head">
@@ -137,7 +178,7 @@ export function ConfigTable({ pendulums, editable }: { pendulums: PendulumView[]
             {pendulums
               .filter((p) => p.config)
               .map((p) => (
-                <Row key={p.id} pendulum={p} editable={editable} />
+                <Row key={p.id} pendulum={p} editable={editable} anchorRange={anchorRange} />
               ))}
           </tbody>
         </table>
