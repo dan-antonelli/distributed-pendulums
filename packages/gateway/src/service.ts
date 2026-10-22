@@ -78,7 +78,16 @@ export function simulationService(bus: Bus, view: SystemView): ServiceImpl<typeo
       return command(CommandType.RESET_CONFIG);
     },
 
-    start: () => command(CommandType.START),
+    async start() {
+      const configs = new Map(view.snapshot().flatMap((p) => (p.config ? [[p.id, p.config] as const] : [])));
+      for (const [id, config] of configs) {
+        const other = firstOverlap(id, config, configs);
+        if (other !== undefined) {
+          throw new ConnectError(`Pendulums ${id} and ${other} overlap. Edit one or reset to defaults.`, Code.FailedPrecondition);
+        }
+      }
+      return command(CommandType.START);
+    },
     pause: () => command(CommandType.PAUSE),
     stop: () => command(CommandType.STOP),
   };

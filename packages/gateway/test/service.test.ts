@@ -26,6 +26,15 @@ describe("commands", () => {
     expect(lastPublished()).toMatchObject({ case: "command", value: { type: CommandType.START } });
   });
 
+  test("start is refused with FAILED_PRECONDITION while two bobs start on top of each other, and nothing is broadcast", async () => {
+    view.onMessage(heartbeat(3, PendulumPhase.STOPPED, config(1)));
+    await expect(client.start({})).rejects.toMatchObject({
+      code: Code.FailedPrecondition,
+      rawMessage: "Pendulums 2 and 3 overlap. Edit one or reset to defaults.",
+    });
+    expect(bus.published).toEqual([]);
+  });
+
   test("pause is broadcast to every pendulum as a PAUSE command", async () => {
     await client.pause({});
     expect(lastPublished()).toMatchObject({ case: "command", value: { type: CommandType.PAUSE } });
