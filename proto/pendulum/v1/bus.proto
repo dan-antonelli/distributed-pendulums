@@ -74,6 +74,8 @@ enum CommandType {
   COMMAND_TYPE_PAUSE = 2;
   // User stop: ends everything and cancels any collision cycle. Not the same as a collision Stop.
   COMMAND_TYPE_STOP = 3;
+  // Each pendulum replaces its config with its own default. Ignored unless stopped.
+  COMMAND_TYPE_RESET_CONFIG = 4;
 }
 
 // A complete, validated config for one pendulum. The gateway merges partial API updates first.

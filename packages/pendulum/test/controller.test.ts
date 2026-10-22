@@ -2,6 +2,7 @@ import { CommandType, PendulumPhase } from "@pendulums/shared";
 import { InMemoryBus } from "@pendulums/shared/testing";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { HEARTBEAT_INTERVAL_MS, PEER_TIMEOUT_MS, PendulumController, RESTART_DELAY_MS } from "../src/controller";
+import { defaultConfig } from "../src/defaults";
 import { actAs, config } from "./helpers";
 
 const { STOPPED, RUNNING, HALTED, READY, WAITING } = PendulumPhase;
@@ -181,6 +182,18 @@ describe("user commands", () => {
     deliver();
     haltInCycle1();
     expect(controller.phase).toBe(STOPPED);
+  });
+
+  test("reset to defaults is ignored while running and applied while stopped", () => {
+    peers.command(CommandType.RESET_CONFIG);
+    deliver();
+    controller.tick(0);
+    expect(controller.angleRad).toBe(0.3);
+
+    peers.command(CommandType.STOP);
+    peers.command(CommandType.RESET_CONFIG);
+    deliver();
+    expect(controller.angleRad).toBe(defaultConfig(1).initialAngleRad);
   });
 
   test("a config change is ignored while running and applied while stopped", () => {

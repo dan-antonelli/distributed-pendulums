@@ -293,6 +293,13 @@ export enum CommandType {
    * @generated from enum value: COMMAND_TYPE_STOP = 3;
    */
   STOP = 3,
+
+  /**
+   * Each pendulum replaces its config with its own default. Ignored unless stopped.
+   *
+   * @generated from enum value: COMMAND_TYPE_RESET_CONFIG = 4;
+   */
+  RESET_CONFIG = 4,
 }
 
 /**

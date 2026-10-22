@@ -17,6 +17,9 @@ service SimulationService {
   // NOT_FOUND (unknown id), FAILED_PRECONDITION (simulation not stopped).
   rpc UpdateConfig(UpdateConfigRequest) returns (UpdateConfigResponse);
 
+  // Every pendulum goes back to its default config. Errors: FAILED_PRECONDITION (simulation not stopped).
+  rpc ResetConfig(ResetConfigRequest) returns (ResetConfigResponse);
+
   rpc Start(StartRequest) returns (StartResponse);
   rpc Pause(PauseRequest) returns (PauseResponse);
   rpc Stop(StopRequest) returns (StopResponse);
@@ -49,6 +52,9 @@ message UpdateConfigRequest {
 }
 
 message UpdateConfigResponse {}
+
+message ResetConfigRequest {}
+message ResetConfigResponse {}
 
 message StartRequest {}
 message StartResponse {}

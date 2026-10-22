@@ -28,6 +28,19 @@ describe("commands", () => {
   });
 });
 
+describe("resetConfig", () => {
+  test("is broadcast to every pendulum as a RESET_CONFIG command", async () => {
+    await client.resetConfig({});
+    expect(lastPublished()).toMatchObject({ case: "command", value: { type: CommandType.RESET_CONFIG } });
+  });
+
+  test("is refused with FAILED_PRECONDITION while any pendulum isn't stopped", async () => {
+    view.onMessage(heartbeat(2, PendulumPhase.RUNNING, config(1)));
+    await expect(client.resetConfig({})).rejects.toMatchObject({ code: Code.FailedPrecondition });
+    expect(bus.published).toEqual([]);
+  });
+});
+
 describe("when Redis is down", () => {
   test("a command fails with UNAVAILABLE instead of reporting success", async () => {
     bus.down = true;

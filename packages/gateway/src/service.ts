@@ -76,6 +76,14 @@ export function simulationService(bus: Bus, view: SystemView): ServiceImpl<typeo
       return {};
     },
 
+    async resetConfig() {
+      // Best effort, like updateConfig: each pendulum also ignores the reset unless it's stopped.
+      if (view.snapshot().some((p) => p.phase !== PendulumPhase.STOPPED)) {
+        throw new ConnectError("stop the simulation before resetting the pendulums", Code.FailedPrecondition);
+      }
+      return command(CommandType.RESET_CONFIG);
+    },
+
     start: () => command(CommandType.START),
     pause: () => command(CommandType.PAUSE),
     stop: () => command(CommandType.STOP),

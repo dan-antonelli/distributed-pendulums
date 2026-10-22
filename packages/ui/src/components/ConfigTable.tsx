@@ -115,18 +115,16 @@ function Row({ pendulum, editable, anchorRange }: { pendulum: PendulumView; edit
           <span className="column-block">{phaseLabel[pendulum.phase]}</span>
         </td>
         <td className="col-edge">
+          {/* Both always visible, so the cell never changes shape. Reset only undoes unsent edits,
+              so it's disabled when there are none, including right after it's pressed. */}
           <div className="row-actions">
             <button type="button" disabled={!editable || !changed} onClick={apply}>
               Apply
             </button>
-            {/* Always rendered, only hidden: if it came and went, the table would re-measure its columns
-                and everything would jump each time a slider crossed the saved value. */}
             <button
               type="button"
-              className={changed ? "quiet" : "quiet is-hidden"}
+              className="quiet"
               disabled={!changed}
-              aria-hidden={!changed}
-              tabIndex={changed ? 0 : -1}
               onClick={() => (setDraft(undefined), setError(undefined))}
             >
               Reset
@@ -155,12 +153,34 @@ function anchorRangeOf(pendulums: PendulumView[]): Range {
 
 export function ConfigTable({ pendulums, editable }: { pendulums: PendulumView[]; editable: boolean }) {
   const anchorRange = anchorRangeOf(pendulums);
+  // Bumped after a reset to defaults: it remounts the rows, which drops any unsent edits along with them.
+  const [generation, setGeneration] = useState(0);
+  const [resetError, setResetError] = useState<string>();
+
+  async function resetToDefaults() {
+    setResetError(undefined);
+    try {
+      await client.resetConfig({});
+      setGeneration((g) => g + 1);
+    } catch (e) {
+      setResetError(ConnectError.from(e).rawMessage);
+    }
+  }
+
   return (
     <section className="config" aria-labelledby="config-title">
       <div className="config-head">
         <h2 id="config-title">Configuration</h2>
         {!editable && <p className="hint">Stop the simulation to change settings.</p>}
+        <button type="button" className="config-reset" disabled={!editable} onClick={resetToDefaults}>
+          Reset to defaults
+        </button>
       </div>
+      {resetError && (
+        <p className="error" role="alert">
+          {resetError}
+        </p>
+      )}
       <div className="table-scroll">
         <table>
           <thead>
@@ -190,7 +210,7 @@ export function ConfigTable({ pendulums, editable }: { pendulums: PendulumView[]
             {pendulums
               .filter((p) => p.config)
               .map((p) => (
-                <Row key={p.id} pendulum={p} editable={editable} anchorRange={anchorRange} />
+                <Row key={`${p.id}-${generation}`} pendulum={p} editable={editable} anchorRange={anchorRange} />
               ))}
           </tbody>
         </table>

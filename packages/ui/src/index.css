@@ -134,8 +134,8 @@ button.quiet {
   color: var(--graphite);
 }
 
-.is-hidden {
-  visibility: hidden;
+button.quiet:disabled {
+  color: #b4bcc3;
 }
 
 .error {
@@ -283,6 +283,14 @@ button.quiet {
   flex-wrap: wrap;
   align-items: baseline;
   gap: 4px 16px;
+  margin-bottom: 8px;
+}
+
+.config-reset {
+  margin-left: auto;
+}
+
+.config .error {
   margin-bottom: 8px;
 }
 

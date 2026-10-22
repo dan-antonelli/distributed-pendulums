@@ -137,6 +137,30 @@ export declare type UpdateConfigResponse = Message<"pendulum.v1.UpdateConfigResp
 export declare const UpdateConfigResponseSchema: GenMessage<UpdateConfigResponse>;
 
 /**
+ * @generated from message pendulum.v1.ResetConfigRequest
+ */
+export declare type ResetConfigRequest = Message<"pendulum.v1.ResetConfigRequest"> & {
+};
+
+/**
+ * Describes the message pendulum.v1.ResetConfigRequest.
+ * Use `create(ResetConfigRequestSchema)` to create a new message.
+ */
+export declare const ResetConfigRequestSchema: GenMessage<ResetConfigRequest>;
+
+/**
+ * @generated from message pendulum.v1.ResetConfigResponse
+ */
+export declare type ResetConfigResponse = Message<"pendulum.v1.ResetConfigResponse"> & {
+};
+
+/**
+ * Describes the message pendulum.v1.ResetConfigResponse.
+ * Use `create(ResetConfigResponseSchema)` to create a new message.
+ */
+export declare const ResetConfigResponseSchema: GenMessage<ResetConfigResponse>;
+
+/**
  * @generated from message pendulum.v1.StartRequest
  */
 export declare type StartRequest = Message<"pendulum.v1.StartRequest"> & {
@@ -238,6 +262,16 @@ export declare const SimulationService: GenService<{
     methodKind: "unary";
     input: typeof UpdateConfigRequestSchema;
     output: typeof UpdateConfigResponseSchema;
+  },
+  /**
+   * Every pendulum goes back to its default config. Errors: FAILED_PRECONDITION (simulation not stopped).
+   *
+   * @generated from rpc pendulum.v1.SimulationService.ResetConfig
+   */
+  resetConfig: {
+    methodKind: "unary";
+    input: typeof ResetConfigRequestSchema;
+    output: typeof ResetConfigResponseSchema;
   },
   /**
    * @generated from rpc pendulum.v1.SimulationService.Start

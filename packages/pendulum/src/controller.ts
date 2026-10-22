@@ -17,6 +17,7 @@ import {
   validateConfig,
 } from "@pendulums/shared";
 import { neighborsWithinReach, newContacts, touchingIds } from "./collision";
+import { defaultConfig } from "./defaults";
 import { type Motion, step } from "./physics";
 
 export const HEARTBEAT_INTERVAL_MS = 200;
@@ -208,6 +209,10 @@ export class PendulumController {
       case CommandType.STOP:
         this.stopAndReset();
         break;
+      case CommandType.RESET_CONFIG:
+        // Each server knows its own default, so no config travels on the bus and no partial reset can overlap.
+        if (this.phaseNow === STOPPED) this.applyConfig(defaultConfig(this.id));
+        break;
     }
   }
 
@@ -215,7 +220,11 @@ export class PendulumController {
     if (update.id !== this.id || !update.config) return;
     // The gateway checks too, but its view can be a moment old. The server has the final say.
     if (this.phaseNow !== STOPPED || validateConfig(update.config).length > 0) return;
-    this.config = update.config;
+    this.applyConfig(update.config);
+  }
+
+  private applyConfig(config: PendulumConfig): void {
+    this.config = config;
     this.motion = this.startingMotion();
     this.updateNeighbors();
     this.publishHeartbeat();

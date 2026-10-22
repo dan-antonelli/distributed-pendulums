@@ -9,7 +9,7 @@ import { file_pendulum_v1_pendulum } from "./pendulum_pb";
  * Describes the file pendulum/v1/simulation.proto.
  */
 export const file_pendulum_v1_simulation = /*@__PURE__*/
-  fileDesc("ChxwZW5kdWx1bS92MS9zaW11bGF0aW9uLnByb3RvEgtwZW5kdWx1bS52MSIXChVXYXRjaFBlbmR1bHVtc1JlcXVlc3QiRgoWV2F0Y2hQZW5kdWx1bXNSZXNwb25zZRIsCglwZW5kdWx1bXMYASADKAsyGS5wZW5kdWx1bS52MS5QZW5kdWx1bVZpZXciugEKDFBlbmR1bHVtVmlldxIKCgJpZBgBIAEoDRIrCgZjb25maWcYAiABKAsyGy5wZW5kdWx1bS52MS5QZW5kdWx1bUNvbmZpZxIpCgVwaGFzZRgDIAEoDjIaLnBlbmR1bHVtLnYxLlBlbmR1bHVtUGhhc2USDwoHYm9iX3hfbRgEIAEoARIPCgdib2JfeV9tGAUgASgBEg0KBWN5Y2xlGAYgASgNEhUKDXJlc3RhcnRfaW5fbXMYByABKA0ixQEKE1VwZGF0ZUNvbmZpZ1JlcXVlc3QSCgoCaWQYASABKA0SFwoKYW5jaG9yX3hfbRgCIAEoAUgAiAEBEhUKCGxlbmd0aF9tGAMgASgBSAGIAQESFAoHbWFzc19rZxgEIAEoAUgCiAEBEh4KEWluaXRpYWxfYW5nbGVfcmFkGAUgASgBSAOIAQFCDQoLX2FuY2hvcl94X21CCwoJX2xlbmd0aF9tQgoKCF9tYXNzX2tnQhQKEl9pbml0aWFsX2FuZ2xlX3JhZCIWChRVcGRhdGVDb25maWdSZXNwb25zZSIOCgxTdGFydFJlcXVlc3QiDwoNU3RhcnRSZXNwb25zZSIOCgxQYXVzZVJlcXVlc3QiDwoNUGF1c2VSZXNwb25zZSINCgtTdG9wUmVxdWVzdCIOCgxTdG9wUmVzcG9uc2UyggMKEVNpbXVsYXRpb25TZXJ2aWNlElsKDldhdGNoUGVuZHVsdW1zEiIucGVuZHVsdW0udjEuV2F0Y2hQZW5kdWx1bXNSZXF1ZXN0GiMucGVuZHVsdW0udjEuV2F0Y2hQZW5kdWx1bXNSZXNwb25zZTABElMKDFVwZGF0ZUNvbmZpZxIgLnBlbmR1bHVtLnYxLlVwZGF0ZUNvbmZpZ1JlcXVlc3QaIS5wZW5kdWx1bS52MS5VcGRhdGVDb25maWdSZXNwb25zZRI+CgVTdGFydBIZLnBlbmR1bHVtLnYxLlN0YXJ0UmVxdWVzdBoaLnBlbmR1bHVtLnYxLlN0YXJ0UmVzcG9uc2USPgoFUGF1c2USGS5wZW5kdWx1bS52MS5QYXVzZVJlcXVlc3QaGi5wZW5kdWx1bS52MS5QYXVzZVJlc3BvbnNlEjsKBFN0b3ASGC5wZW5kdWx1bS52MS5TdG9wUmVxdWVzdBoZLnBlbmR1bHVtLnYxLlN0b3BSZXNwb25zZWIGcHJvdG8z", [file_pendulum_v1_pendulum]);
+  fileDesc("ChxwZW5kdWx1bS92MS9zaW11bGF0aW9uLnByb3RvEgtwZW5kdWx1bS52MSIXChVXYXRjaFBlbmR1bHVtc1JlcXVlc3QiRgoWV2F0Y2hQZW5kdWx1bXNSZXNwb25zZRIsCglwZW5kdWx1bXMYASADKAsyGS5wZW5kdWx1bS52MS5QZW5kdWx1bVZpZXciugEKDFBlbmR1bHVtVmlldxIKCgJpZBgBIAEoDRIrCgZjb25maWcYAiABKAsyGy5wZW5kdWx1bS52MS5QZW5kdWx1bUNvbmZpZxIpCgVwaGFzZRgDIAEoDjIaLnBlbmR1bHVtLnYxLlBlbmR1bHVtUGhhc2USDwoHYm9iX3hfbRgEIAEoARIPCgdib2JfeV9tGAUgASgBEg0KBWN5Y2xlGAYgASgNEhUKDXJlc3RhcnRfaW5fbXMYByABKA0ixQEKE1VwZGF0ZUNvbmZpZ1JlcXVlc3QSCgoCaWQYASABKA0SFwoKYW5jaG9yX3hfbRgCIAEoAUgAiAEBEhUKCGxlbmd0aF9tGAMgASgBSAGIAQESFAoHbWFzc19rZxgEIAEoAUgCiAEBEh4KEWluaXRpYWxfYW5nbGVfcmFkGAUgASgBSAOIAQFCDQoLX2FuY2hvcl94X21CCwoJX2xlbmd0aF9tQgoKCF9tYXNzX2tnQhQKEl9pbml0aWFsX2FuZ2xlX3JhZCIWChRVcGRhdGVDb25maWdSZXNwb25zZSIUChJSZXNldENvbmZpZ1JlcXVlc3QiFQoTUmVzZXRDb25maWdSZXNwb25zZSIOCgxTdGFydFJlcXVlc3QiDwoNU3RhcnRSZXNwb25zZSIOCgxQYXVzZVJlcXVlc3QiDwoNUGF1c2VSZXNwb25zZSINCgtTdG9wUmVxdWVzdCIOCgxTdG9wUmVzcG9uc2Uy1AMKEVNpbXVsYXRpb25TZXJ2aWNlElsKDldhdGNoUGVuZHVsdW1zEiIucGVuZHVsdW0udjEuV2F0Y2hQZW5kdWx1bXNSZXF1ZXN0GiMucGVuZHVsdW0udjEuV2F0Y2hQZW5kdWx1bXNSZXNwb25zZTABElMKDFVwZGF0ZUNvbmZpZxIgLnBlbmR1bHVtLnYxLlVwZGF0ZUNvbmZpZ1JlcXVlc3QaIS5wZW5kdWx1bS52MS5VcGRhdGVDb25maWdSZXNwb25zZRJQCgtSZXNldENvbmZpZxIfLnBlbmR1bHVtLnYxLlJlc2V0Q29uZmlnUmVxdWVzdBogLnBlbmR1bHVtLnYxLlJlc2V0Q29uZmlnUmVzcG9uc2USPgoFU3RhcnQSGS5wZW5kdWx1bS52MS5TdGFydFJlcXVlc3QaGi5wZW5kdWx1bS52MS5TdGFydFJlc3BvbnNlEj4KBVBhdXNlEhkucGVuZHVsdW0udjEuUGF1c2VSZXF1ZXN0GhoucGVuZHVsdW0udjEuUGF1c2VSZXNwb25zZRI7CgRTdG9wEhgucGVuZHVsdW0udjEuU3RvcFJlcXVlc3QaGS5wZW5kdWx1bS52MS5TdG9wUmVzcG9uc2ViBnByb3RvMw", [file_pendulum_v1_pendulum]);
 
 /**
  * Describes the message pendulum.v1.WatchPendulumsRequest.
@@ -47,46 +47,60 @@ export const UpdateConfigResponseSchema = /*@__PURE__*/
   messageDesc(file_pendulum_v1_simulation, 4);
 
 /**
+ * Describes the message pendulum.v1.ResetConfigRequest.
+ * Use `create(ResetConfigRequestSchema)` to create a new message.
+ */
+export const ResetConfigRequestSchema = /*@__PURE__*/
+  messageDesc(file_pendulum_v1_simulation, 5);
+
+/**
+ * Describes the message pendulum.v1.ResetConfigResponse.
+ * Use `create(ResetConfigResponseSchema)` to create a new message.
+ */
+export const ResetConfigResponseSchema = /*@__PURE__*/
+  messageDesc(file_pendulum_v1_simulation, 6);
+
+/**
  * Describes the message pendulum.v1.StartRequest.
  * Use `create(StartRequestSchema)` to create a new message.
  */
 export const StartRequestSchema = /*@__PURE__*/
-  messageDesc(file_pendulum_v1_simulation, 5);
+  messageDesc(file_pendulum_v1_simulation, 7);
 
 /**
  * Describes the message pendulum.v1.StartResponse.
  * Use `create(StartResponseSchema)` to create a new message.
  */
 export const StartResponseSchema = /*@__PURE__*/
-  messageDesc(file_pendulum_v1_simulation, 6);
+  messageDesc(file_pendulum_v1_simulation, 8);
 
 /**
  * Describes the message pendulum.v1.PauseRequest.
  * Use `create(PauseRequestSchema)` to create a new message.
  */
 export const PauseRequestSchema = /*@__PURE__*/
-  messageDesc(file_pendulum_v1_simulation, 7);
+  messageDesc(file_pendulum_v1_simulation, 9);
 
 /**
  * Describes the message pendulum.v1.PauseResponse.
  * Use `create(PauseResponseSchema)` to create a new message.
  */
 export const PauseResponseSchema = /*@__PURE__*/
-  messageDesc(file_pendulum_v1_simulation, 8);
+  messageDesc(file_pendulum_v1_simulation, 10);
 
 /**
  * Describes the message pendulum.v1.StopRequest.
  * Use `create(StopRequestSchema)` to create a new message.
  */
 export const StopRequestSchema = /*@__PURE__*/
-  messageDesc(file_pendulum_v1_simulation, 9);
+  messageDesc(file_pendulum_v1_simulation, 11);
 
 /**
  * Describes the message pendulum.v1.StopResponse.
  * Use `create(StopResponseSchema)` to create a new message.
  */
 export const StopResponseSchema = /*@__PURE__*/
-  messageDesc(file_pendulum_v1_simulation, 10);
+  messageDesc(file_pendulum_v1_simulation, 12);
 
 /**
  * The public API the browser calls, served by the gateway.

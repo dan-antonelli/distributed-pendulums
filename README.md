@@ -28,7 +28,7 @@ flowchart LR
     P2["Pendulum 2"]
     PN["Pendulum N"]
   end
-  B -- "gRPC via Connect:<br>WatchPendulums stream (snapshot every 50 ms)<br>UpdateConfig, Start, Pause, Stop" --> G
+  B -- "gRPC via Connect:<br>WatchPendulums stream (snapshot every 50 ms)<br>UpdateConfig, ResetConfig, Start, Pause, Stop" --> G
   G -- "protobuf on pendulums:control<br>(commands, config updates)" --> R
   R -- "pendulums:heartbeat<br>pendulums:*:position" --> G
   S -- "protobuf: own position 60/s on pendulums:{id}:position<br>heartbeat 5/s on pendulums:heartbeat<br>STOP, RESTART, READY on pendulums:control" --> R
@@ -120,7 +120,7 @@ npm test
 npm run typecheck
 ```
 
-There are 75 tests in 12 files. They cover the physics, collisions and neighbors, the state machine, a five-server collision cycle on an in-memory bus with fake timers, the gateway API through Connect's in-memory transport, and the UI's pure helpers. The five-server test covers a full cycle, two servers reporting the same collision, a lost RESTART, a server that missed the STOP, a server dying mid-cycle, and a user stop during the wait.
+There are 78 tests in 12 files. They cover the physics, collisions and neighbors, the state machine, a five-server collision cycle on an in-memory bus with fake timers, the gateway API through Connect's in-memory transport, and the UI's pure helpers. The five-server test covers a full cycle, two servers reporting the same collision, a lost RESTART, a server that missed the STOP, a server dying mid-cycle, and a user stop during the wait.
 
 ## Development without Docker
 
