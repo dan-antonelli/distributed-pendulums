@@ -2,7 +2,7 @@ import { PendulumPhase } from "@pendulums/shared";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test } from "vitest";
-import { Stage } from "../src/components/Stage";
+import { MAX_GRID_LINES, Stage } from "../src/components/Stage";
 import { view } from "./support";
 
 const { HALTED, WAITING } = PendulumPhase;
@@ -13,6 +13,13 @@ describe("Stage", () => {
     render(<Stage pendulums={[view(1), view(2), view(3)]} />);
     expect(screen.getByRole("img", { name: "3 pendulums" })).toBeInTheDocument();
     for (const id of [1, 2, 3]) expect(screen.getByText(String(id))).toBeInTheDocument();
+  });
+
+  test("draws a bounded number of grid lines even for an extreme config", () => {
+    const far = view(2);
+    far.config!.anchorXM = 5000;
+    const { container } = render(<Stage pendulums={[view(1), far]} />);
+    expect(container.querySelectorAll(".grid line").length).toBeLessThanOrEqual(2 * MAX_GRID_LINES);
   });
 
   test("the status shows the collision and the restart countdown", () => {

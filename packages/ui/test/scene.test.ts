@@ -71,6 +71,11 @@ describe("swingFrame", () => {
   });
 });
 
+test("the anchor range for the inputs never leaves the allowed limits", () => {
+  const at = (anchorXM: number) => create(PendulumViewSchema, { config: { anchorXM, lengthM: 1, massKg: 1 } });
+  expect(anchorRangeOf([at(-19.5), at(19.5)])).toEqual(limits.anchorXM);
+});
+
 describe("pendingUpdates", () => {
   const view = (id: number, lengthM = 1) =>
     create(PendulumViewSchema, { id, config: { anchorXM: id, lengthM, massKg: 1, initialAngleRad: 0.5 } });

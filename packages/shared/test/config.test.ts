@@ -18,6 +18,10 @@ describe("validateConfig", () => {
     expect(validateConfig(config({ initialAngleRad: 2 }))).toHaveLength(1);
   });
 
+  test("rejects an anchor outside the allowed range", () => {
+    expect(validateConfig(config({ anchorXM: 25 }))).toEqual(["anchor_x_m must be between -20 and 20"]);
+  });
+
   test("rejects NaN, which binary protobuf can carry", () => {
     expect(validateConfig(config({ massKg: Number.NaN }))).toEqual(["mass_kg must be a finite number"]);
   });

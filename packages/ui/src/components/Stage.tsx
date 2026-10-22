@@ -8,6 +8,10 @@ const IN_CYCLE = new Set([HALTED, READY, WAITING]);
 const ZOOM_STEPS = [0.5, 0.75, 1, 1.5, 2, 3];
 // Room for a horizontal scrollbar, so it never forces a vertical one at 100%.
 const SCROLLBAR_ALLOWANCE_PX = 14;
+export const MAX_GRID_LINES = 200;
+const GRID_STEP_M = 0.5;
+
+const gridStepM = (spanM: number) => GRID_STEP_M * Math.max(1, Math.ceil(spanM / GRID_STEP_M / MAX_GRID_LINES));
 
 function bobClass(phase: PendulumPhase): string {
   if (IN_CYCLE.has(phase)) return "bob bob--cycle";
@@ -55,10 +59,12 @@ export function Stage({ pendulums }: { pendulums: PendulumView[] }) {
   const pxPerM = (Math.max(height - SCROLLBAR_ALLOWANCE_PX, 0) / frame.heightM) * zoom;
   const inCycle = systemState(pendulums) === "collision";
 
+  const stepXM = gridStepM(frame.widthM);
   const gridXs = [];
-  for (let x = Math.ceil(frame.xM * 2) / 2; x < frame.xM + frame.widthM; x += 0.5) gridXs.push(x);
+  for (let x = Math.ceil(frame.xM / stepXM) * stepXM; x < frame.xM + frame.widthM; x += stepXM) gridXs.push(x);
+  const stepYM = gridStepM(frame.heightM);
   const gridYs = [];
-  for (let y = 0.5; y < frame.yM + frame.heightM; y += 0.5) gridYs.push(y);
+  for (let y = stepYM; y < frame.yM + frame.heightM; y += stepYM) gridYs.push(y);
 
   return (
     <div className="stage">

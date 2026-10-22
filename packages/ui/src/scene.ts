@@ -85,7 +85,9 @@ export interface Range {
 export function anchorRangeOf(pendulums: PendulumView[]): Range {
   const anchors = pendulums.flatMap((p) => (p.config ? [p.config.anchorXM] : []));
   if (anchors.length === 0) return { min: 0, max: 5 };
-  return { min: Math.floor(Math.min(...anchors) - 2), max: Math.ceil(Math.max(...anchors) + 2) };
+  const { min, max } = limits.anchorXM;
+  const clamp = (value: number) => Math.min(max, Math.max(min, value));
+  return { min: clamp(Math.floor(Math.min(...anchors) - 2)), max: clamp(Math.ceil(Math.max(...anchors) + 2)) };
 }
 
 const pick = (random: () => number, range: Range, step: number) =>
