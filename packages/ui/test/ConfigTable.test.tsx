@@ -1,14 +1,15 @@
 import { PendulumPhase } from "@pendulums/shared";
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { Panel } from "./Panel";
-import { createFakeService, renderWithTransport, view } from "./support";
+import { createFakeService, renderWithTransport, seeded, view } from "./support";
 
 const length = (id: number) => screen.getByRole("spinbutton", { name: `String length in meters, pendulum ${id}` });
 const apply = (id: number) => screen.getByRole("button", { name: `Apply, pendulum ${id}` });
 const reset = (id: number) => screen.getByRole("button", { name: `Reset, pendulum ${id}` });
 const resetToDefaults = () => screen.getByRole("button", { name: "Reset to defaults" });
+const randomize = () => screen.getByRole("button", { name: "Randomize" });
 
 async function setLength(user: ReturnType<typeof userEvent.setup>, id: number, value: string) {
   await user.clear(length(id));
@@ -78,5 +79,44 @@ describe("ConfigTable", () => {
 
     await waitFor(() => expect(fake.methods()).toEqual(["resetConfig"]));
     await waitFor(() => expect(length(1)).toHaveValue(1));
+  });
+
+  describe("Randomize", () => {
+    beforeEach(() => {
+      vi.spyOn(Math, "random").mockImplementation(seeded(3));
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    test("fills drafts for every row without calling the server", async () => {
+      const user = userEvent.setup();
+      const fake = createFakeService();
+      renderWithTransport(<Panel pendulums={[view(1), view(2)]} />, fake);
+
+      await user.click(randomize());
+
+      expect(apply(1)).toBeEnabled();
+      expect(apply(2)).toBeEnabled();
+      expect(fake.calls).toEqual([]);
+    });
+
+    test("Start after Randomize sends UpdateConfig for the changed rows, then Start", async () => {
+      const user = userEvent.setup();
+      const fake = createFakeService();
+      renderWithTransport(<Panel pendulums={[view(1), view(2)]} />, fake);
+
+      await user.click(randomize());
+      await user.click(screen.getByRole("button", { name: "Start" }));
+
+      await waitFor(() => expect(fake.methods()).toEqual(["updateConfig", "updateConfig", "start"]));
+      expect(fake.calls.slice(0, 2).map((call) => call.request.id)).toEqual([1, 2]);
+    });
+
+    test("is disabled while running", () => {
+      renderWithTransport(<Panel pendulums={[view(1, { phase: PendulumPhase.RUNNING })]} />, createFakeService());
+      expect(randomize()).toBeDisabled();
+    });
   });
 });

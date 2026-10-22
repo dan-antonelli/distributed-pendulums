@@ -1,4 +1,14 @@
-import { type PendulumView, PendulumPhase, bobRadiusM } from "@pendulums/shared";
+import { create } from "@bufbuild/protobuf";
+import {
+  type PendulumConfig,
+  PendulumConfigSchema,
+  PendulumPhase,
+  type PendulumView,
+  bobRadiusM,
+  firstOverlap,
+  limits,
+  validateConfig,
+} from "@pendulums/shared";
 
 const { STOPPED, RUNNING, PAUSED, HALTED, READY, WAITING } = PendulumPhase;
 
@@ -64,7 +74,65 @@ export function readable(message: string): string {
     .replace("mass_kg", "Mass");
 }
 
-export const isEditable =(pendulums: PendulumView[]) => pendulums.every((p) => p.phase === STOPPED);
+export interface Range {
+  min: number;
+  max: number;
+}
+
+// Computed from the saved configs, so the slider doesn't jump while dragging. The box accepts any position.
+export function anchorRangeOf(pendulums: PendulumView[]): Range {
+  const anchors = pendulums.flatMap((p) => (p.config ? [p.config.anchorXM] : []));
+  if (anchors.length === 0) return { min: 0, max: 5 };
+  return { min: Math.floor(Math.min(...anchors) - 2), max: Math.ceil(Math.max(...anchors) + 2) };
+}
+
+const pick = (random: () => number, range: Range, step: number) =>
+  range.min + Math.floor(random() * (Math.round((range.max - range.min) / step) + 1)) * step;
+
+const configOf = (draft: Draft) =>
+  create(PendulumConfigSchema, {
+    anchorXM: Number(draft.anchor),
+    lengthM: Number(draft.length),
+    massKg: Number(draft.mass),
+    initialAngleRad: radians(Number(draft.angle)),
+  });
+
+// Start applies rows one at a time and the gateway checks each against the configs it has then,
+// so every intermediate state must be overlap-free, not just the final one.
+function appliesInOrder(rows: PendulumView[], drafts: Record<number, Draft>): boolean {
+  const configs = new Map<number, PendulumConfig>(rows.map((p) => [p.id, p.config!]));
+  for (const p of rows) {
+    const next = configOf(drafts[p.id]!);
+    if (validateConfig(next).length > 0 || firstOverlap(p.id, next, configs) !== undefined) return false;
+    configs.set(p.id, next);
+  }
+  return true;
+}
+
+export function randomDrafts(
+  pendulums: PendulumView[],
+  random: () => number,
+  attempts = 50,
+): Record<number, Draft> | undefined {
+  const rows = pendulums.filter((p) => p.config);
+  const anchors = anchorRangeOf(pendulums);
+  const angles = { min: degrees(limits.angleRad.min), max: degrees(limits.angleRad.max) };
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    const drafts: Record<number, Draft> = {};
+    for (const p of rows) {
+      drafts[p.id] = {
+        anchor: round(pick(random, anchors, 0.05)),
+        length: round(pick(random, limits.lengthM, 0.05)),
+        mass: round(pick(random, limits.massKg, 0.1)),
+        angle: String(pick(random, angles, 1)),
+      };
+    }
+    if (appliesInOrder(rows, drafts)) return drafts;
+  }
+  return undefined;
+}
+
+export const isEditable = (pendulums: PendulumView[]) => pendulums.every((p) => p.phase === STOPPED);
 
 export function restartCountdownS(pendulums: PendulumView[]): number | undefined {
   const waiting = pendulums.filter((p) => p.phase === WAITING);

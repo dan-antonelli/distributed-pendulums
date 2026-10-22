@@ -27,3 +27,12 @@ export function isTouching(a: Bob, b: Bob): boolean {
 export function startingBob(config: PendulumConfig): Bob {
   return { ...bobPosition(config, config.initialAngleRad), radiusM: bobRadiusM(config.massKg) };
 }
+
+// Starting overlapped would fire a collision the instant the user presses start.
+export function firstOverlap(id: number, config: PendulumConfig, others: Map<number, PendulumConfig>): number | undefined {
+  const bob = startingBob(config);
+  for (const [otherId, other] of others) {
+    if (otherId !== id && isTouching(bob, startingBob(other))) return otherId;
+  }
+  return undefined;
+}

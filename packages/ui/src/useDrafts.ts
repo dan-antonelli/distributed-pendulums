@@ -18,6 +18,10 @@ export function useDrafts() {
     errors,
     setDraft: (id: number, draft: Draft | undefined) => setDrafts((d) => withEntry(d, id, draft)),
     setError: (id: number, error: string | undefined) => setErrors((e) => withEntry(e, id, error)),
+    replaceAll: (next: ById<Draft>) => {
+      setDrafts(next);
+      setErrors({});
+    },
     clearAll: () => {
       setDrafts({});
       setErrors({});

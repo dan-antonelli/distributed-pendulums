@@ -1,7 +1,18 @@
 import { create } from "@bufbuild/protobuf";
-import { PendulumPhase, PendulumViewSchema } from "@pendulums/shared";
+import { PendulumConfigSchema, PendulumPhase, PendulumViewSchema, firstOverlap, limits } from "@pendulums/shared";
 import { describe, expect, test } from "vitest";
-import { type Draft, draftOf, isEditable, pendingUpdates, restartCountdownS, swingFrame, systemState } from "../src/scene";
+import {
+  type Draft,
+  anchorRangeOf,
+  draftOf,
+  isEditable,
+  pendingUpdates,
+  randomDrafts,
+  restartCountdownS,
+  swingFrame,
+  systemState,
+} from "../src/scene";
+import { seeded, view } from "./support";
 
 const { STOPPED, RUNNING, PAUSED, HALTED, WAITING } = PendulumPhase;
 const pendulum = (phase: PendulumPhase, restartInMs = 0) => create(PendulumViewSchema, { phase, restartInMs });
@@ -86,5 +97,59 @@ describe("pendingUpdates", () => {
       { id: 1, initialAngleRad: Math.PI / 2 },
       { id: 3, massKg: 4 },
     ]);
+  });
+});
+
+describe("randomDrafts", () => {
+  const pendulums = [view(1), view(2), view(3), view(4), view(5)];
+  const configsOf = (drafts: Record<number, Draft>) =>
+    new Map(
+      Object.entries(drafts).map(([id, d]) => [
+        Number(id),
+        create(PendulumConfigSchema, {
+          anchorXM: Number(d.anchor),
+          lengthM: Number(d.length),
+          massKg: Number(d.mass),
+          initialAngleRad: (Number(d.angle) * Math.PI) / 180,
+        }),
+      ]),
+    );
+
+  test("every value is within the allowed ranges", () => {
+    const drafts = randomDrafts(pendulums, seeded(1))!;
+    const anchors = anchorRangeOf(pendulums);
+    expect(Object.keys(drafts)).toHaveLength(5);
+    for (const d of Object.values(drafts)) {
+      expect(Number(d.anchor)).toBeGreaterThanOrEqual(anchors.min);
+      expect(Number(d.anchor)).toBeLessThanOrEqual(anchors.max);
+      expect(Number(d.length)).toBeGreaterThanOrEqual(limits.lengthM.min);
+      expect(Number(d.length)).toBeLessThanOrEqual(limits.lengthM.max);
+      expect(Number(d.mass)).toBeGreaterThanOrEqual(limits.massKg.min);
+      expect(Number(d.mass)).toBeLessThanOrEqual(limits.massKg.max);
+      expect(Number(d.angle)).toBeGreaterThanOrEqual(-90);
+      expect(Number(d.angle)).toBeLessThanOrEqual(90);
+    }
+  });
+
+  test("no two bobs start overlapping", () => {
+    for (let seed = 1; seed <= 20; seed++) {
+      const configs = configsOf(randomDrafts(pendulums, seeded(seed))!);
+      for (const [id, config] of configs) expect(firstOverlap(id, config, configs)).toBeUndefined();
+    }
+  });
+
+  test("the same seed gives the same drafts", () => {
+    expect(randomDrafts(pendulums, seeded(7))).toEqual(randomDrafts(pendulums, seeded(7)));
+  });
+
+  test("gives up after the allowed attempts when every set overlaps", () => {
+    const sameAnchor = [view(1), view(1)].map((p, i) => ({ ...p, id: i + 1 }));
+    let calls = 0;
+    const constant = () => {
+      calls++;
+      return 0.5;
+    };
+    expect(randomDrafts(sameAnchor, constant, 3)).toBeUndefined();
+    expect(calls).toBe(3 * 2 * 4);
   });
 });

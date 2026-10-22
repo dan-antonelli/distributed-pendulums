@@ -10,8 +10,7 @@ import {
   PendulumPhase,
   SimulationService,
   channels,
-  isTouching,
-  startingBob,
+  firstOverlap,
   validateConfig,
 } from "@pendulums/shared";
 import type { SystemView } from "./view";
@@ -87,12 +86,3 @@ export function simulationService(bus: Bus, view: SystemView): ServiceImpl<typeo
 
 export const routes = (bus: Bus, view: SystemView) => (router: ConnectRouter) =>
   router.service(SimulationService, simulationService(bus, view));
-
-// Starting overlapped would fire a collision the instant the user presses start.
-function firstOverlap(id: number, config: PendulumConfig, others: Map<number, PendulumConfig>): number | undefined {
-  const bob = startingBob(config);
-  for (const [otherId, other] of others) {
-    if (otherId !== id && isTouching(bob, startingBob(other))) return otherId;
-  }
-  return undefined;
-}

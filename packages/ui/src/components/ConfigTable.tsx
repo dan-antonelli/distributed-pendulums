@@ -2,7 +2,7 @@ import { ConnectError } from "@connectrpc/connect";
 import { type PendulumView, PendulumPhase, limits } from "@pendulums/shared";
 import { useState } from "react";
 import { useClient } from "../client";
-import { type Draft, changeOf, draftOf, readable } from "../scene";
+import { type Draft, type Range, anchorRangeOf, changeOf, draftOf, randomDrafts, readable } from "../scene";
 import type { Drafts } from "../useDrafts";
 
 const phaseLabel: Record<PendulumPhase, string> = {
@@ -14,11 +14,6 @@ const phaseLabel: Record<PendulumPhase, string> = {
   [PendulumPhase.READY]: "Ready",
   [PendulumPhase.WAITING]: "Waiting",
 };
-
-interface Range {
-  min: number;
-  max: number;
-}
 
 function Row({ pendulum, editable, anchorRange, drafts }: { pendulum: PendulumView; editable: boolean; anchorRange: Range; drafts: Drafts }) {
   const client = useClient();
@@ -115,26 +110,29 @@ function Row({ pendulum, editable, anchorRange, drafts }: { pendulum: PendulumVi
   );
 }
 
-// Computed from the saved configs, so the slider doesn't jump while dragging. The box accepts any position.
-function anchorRangeOf(pendulums: PendulumView[]): Range {
-  const anchors = pendulums.flatMap((p) => (p.config ? [p.config.anchorXM] : []));
-  if (anchors.length === 0) return { min: 0, max: 5 };
-  return { min: Math.floor(Math.min(...anchors) - 2), max: Math.ceil(Math.max(...anchors) + 2) };
-}
-
 export function ConfigTable({ pendulums, editable, drafts }: { pendulums: PendulumView[]; editable: boolean; drafts: Drafts }) {
   const client = useClient();
   const anchorRange = anchorRangeOf(pendulums);
-  const [resetError, setResetError] = useState<string>();
+  const [configError, setConfigError] = useState<string>();
 
   async function resetToDefaults() {
-    setResetError(undefined);
+    setConfigError(undefined);
     try {
       await client.resetConfig({});
       drafts.clearAll();
     } catch (e) {
-      setResetError(ConnectError.from(e).rawMessage);
+      setConfigError(ConnectError.from(e).rawMessage);
     }
+  }
+
+  function randomize() {
+    const random = randomDrafts(pendulums, Math.random);
+    if (!random) {
+      setConfigError("Couldn't find a valid random configuration. Try again.");
+      return;
+    }
+    setConfigError(undefined);
+    drafts.replaceAll(random);
   }
 
   return (
@@ -142,13 +140,18 @@ export function ConfigTable({ pendulums, editable, drafts }: { pendulums: Pendul
       <div className="config-head">
         <h2 id="config-title">Configuration</h2>
         {!editable && <p className="hint">Stop the simulation to change settings.</p>}
-        <button type="button" className="config-reset" disabled={!editable} onClick={resetToDefaults}>
-          Reset to defaults
-        </button>
+        <div className="config-actions">
+          <button type="button" disabled={!editable} onClick={randomize}>
+            Randomize
+          </button>
+          <button type="button" disabled={!editable} onClick={resetToDefaults}>
+            Reset to defaults
+          </button>
+        </div>
       </div>
-      {resetError && (
+      {configError && (
         <p className="error" role="alert">
-          {resetError}
+          {configError}
         </p>
       )}
       <div className="table-scroll">
