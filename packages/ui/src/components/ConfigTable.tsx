@@ -55,8 +55,8 @@ function Row({ pendulum, editable, anchorRange }: { pendulum: PendulumView; edit
     const update = (value: string) => setDraft({ ...shown, [key]: value });
     const sliderValue = Number.isFinite(Number.parseFloat(shown[key])) ? shown[key] : saved[key];
     return (
-      <td>
-        <div className="field">
+      <td className="col-middle">
+        <div className="field column-block">
           <input
             aria-label={`${label}, pendulum ${pendulum.id}`}
             type="number"
@@ -106,13 +106,15 @@ function Row({ pendulum, editable, anchorRange }: { pendulum: PendulumView; edit
   return (
     <>
       <tr>
-        <th scope="row">{pendulum.id}</th>
+        <th scope="row" className="col-edge">{pendulum.id}</th>
         {field("anchor", "Anchor position in meters", anchorRange, 0.05)}
         {field("length", "String length in meters", limits.lengthM, 0.05)}
         {field("mass", "Mass in kilograms", limits.massKg, 0.1)}
         {field("angle", "Starting angle in degrees", { min: -90, max: 90 }, 1)}
-        <td className="phase">{phaseLabel[pendulum.phase]}</td>
-        <td>
+        <td className="col-middle phase">
+          <span className="column-block">{phaseLabel[pendulum.phase]}</span>
+        </td>
+        <td className="col-edge">
           <div className="row-actions">
             <button type="button" disabled={!editable || !changed} onClick={apply}>
               Apply
@@ -163,13 +165,23 @@ export function ConfigTable({ pendulums, editable }: { pendulums: PendulumView[]
         <table>
           <thead>
             <tr>
-              <th scope="col">#</th>
-              <th scope="col">Anchor (m)</th>
-              <th scope="col">Length (m)</th>
-              <th scope="col">Mass (kg)</th>
-              <th scope="col">Start angle (°)</th>
-              <th scope="col">State</th>
-              <th scope="col">
+              <th scope="col" className="col-edge">#</th>
+              <th scope="col" className="col-middle">
+                <span className="column-block">Anchor (m)</span>
+              </th>
+              <th scope="col" className="col-middle">
+                <span className="column-block">Length (m)</span>
+              </th>
+              <th scope="col" className="col-middle">
+                <span className="column-block">Mass (kg)</span>
+              </th>
+              <th scope="col" className="col-middle">
+                <span className="column-block">Start angle (°)</span>
+              </th>
+              <th scope="col" className="col-middle">
+                <span className="column-block">State</span>
+              </th>
+              <th scope="col" className="col-edge">
                 <span className="visually-hidden">Actions</span>
               </th>
             </tr>

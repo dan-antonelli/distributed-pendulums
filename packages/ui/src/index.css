@@ -307,7 +307,7 @@ table {
 
 th,
 td {
-  padding: 8px 12px;
+  padding: 8px;
   border-bottom: 1px solid var(--rule);
   text-align: left;
   white-space: nowrap;
@@ -343,11 +343,20 @@ input[type="number"]:disabled {
   color: var(--ink);
 }
 
+/* A fixed-width block centered in its column. Titles, controls and the state text all use it,
+   so each title lines up with the left edge of what's under it, at any window width. */
+.column-block {
+  display: block;
+  /* rem, not em: the header font is smaller, and em would make the header blocks narrower than the cells'. */
+  width: 8rem;
+  margin: 0 auto;
+  text-align: left;
+}
+
 .field {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  width: 8em;
 }
 
 input[type="range"] {
@@ -366,9 +375,26 @@ input[type="range"]:disabled {
   color: var(--graphite);
 }
 
+/* Fixed layout: the # and actions columns get the same width, and the five middle columns share the rest
+   equally. So the middle columns are evenly spaced, and centered on the row, at any width. Below the
+   minimum width the table scrolls sideways instead of squeezing the controls. */
+.config table {
+  table-layout: fixed;
+  min-width: 59rem;
+}
+
+.col-edge {
+  width: 7rem;
+}
+
 .row-actions {
   display: flex;
+  flex-direction: column;
   gap: 4px;
+}
+
+.row-actions button {
+  padding: 4px 14px;
 }
 
 .row-error td {
