@@ -18,7 +18,6 @@ import type { SystemView } from "./view";
 
 export const SNAPSHOT_INTERVAL_MS = 50;
 
-// A successful response means "accepted and broadcast", not "applied": the bus has no replies.
 export function simulationService(bus: Bus, view: SystemView): ServiceImpl<typeof SimulationService> {
   // Awaited, so a command never reports success while Redis is down.
   const broadcast = async (body: MessageInitShape<typeof BusMessageSchema>["body"]) => {
@@ -74,7 +73,6 @@ export function simulationService(bus: Bus, view: SystemView): ServiceImpl<typeo
     },
 
     async resetConfig() {
-      // Best effort, like updateConfig.
       if (view.snapshot().some((p) => p.phase !== PendulumPhase.STOPPED)) {
         throw new ConnectError("stop the simulation before resetting the pendulums", Code.FailedPrecondition);
       }

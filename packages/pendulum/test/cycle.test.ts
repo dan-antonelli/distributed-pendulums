@@ -102,7 +102,6 @@ describe("the whole collision cycle on five servers", () => {
     const dead = servers.pop()!;
     dead.dispose();
 
-    // Still blocked: the others are waiting for the dead server's RESTART.
     run(3000);
     expect(all(servers, (s) => s.phase === HALTED)).toBe(true);
 
