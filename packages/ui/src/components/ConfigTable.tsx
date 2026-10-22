@@ -2,18 +2,8 @@ import { ConnectError } from "@connectrpc/connect";
 import { type PendulumView, PendulumPhase, limits } from "@pendulums/shared";
 import { useState } from "react";
 import { client } from "../client";
-
-const degrees = (rad: number) => Math.round((rad * 180) / Math.PI);
-const radians = (deg: number) => (deg * Math.PI) / 180;
-const round = (value: number) => String(Math.round(value * 100) / 100);
-
-function readable(message: string): string {
-  return message
-    .replace(/initial_angle_rad must be between [^;]+/, "Start angle must be between -90° and 90°")
-    .replace("anchor_x_m", "Anchor")
-    .replace("length_m", "Length")
-    .replace("mass_kg", "Mass");
-}
+import { type Draft, changeOf, draftOf, readable } from "../scene";
+import type { Drafts } from "../useDrafts";
 
 const phaseLabel: Record<PendulumPhase, string> = {
   [PendulumPhase.UNSPECIFIED]: "Unknown",
@@ -25,27 +15,17 @@ const phaseLabel: Record<PendulumPhase, string> = {
   [PendulumPhase.WAITING]: "Waiting",
 };
 
-interface Draft {
-  anchor: string;
-  length: string;
-  mass: string;
-  angle: string;
-}
-
-function draftOf(p: PendulumView): Draft {
-  const c = p.config!;
-  return { anchor: round(c.anchorXM), length: round(c.lengthM), mass: round(c.massKg), angle: String(degrees(c.initialAngleRad)) };
-}
-
 interface Range {
   min: number;
   max: number;
 }
 
-function Row({ pendulum, editable, anchorRange }: { pendulum: PendulumView; editable: boolean; anchorRange: Range }) {
+function Row({ pendulum, editable, anchorRange, drafts }: { pendulum: PendulumView; editable: boolean; anchorRange: Range; drafts: Drafts }) {
   const saved = draftOf(pendulum);
-  const [draft, setDraft] = useState<Draft>();
-  const [error, setError] = useState<string>();
+  const draft = drafts.drafts[pendulum.id];
+  const error = drafts.errors[pendulum.id];
+  const setDraft = (next: Draft | undefined) => drafts.setDraft(pendulum.id, next);
+  const setError = (next: string | undefined) => drafts.setError(pendulum.id, next);
   const shown = draft ?? saved;
 
   // While the box holds something that isn't a number yet (mid-typing), the slider shows the saved value.
@@ -85,13 +65,7 @@ function Row({ pendulum, editable, anchorRange }: { pendulum: PendulumView; edit
     if (!draft) return;
     setError(undefined);
     try {
-      await client.updateConfig({
-        id: pendulum.id,
-        ...(draft.anchor !== saved.anchor && { anchorXM: Number(draft.anchor) }),
-        ...(draft.length !== saved.length && { lengthM: Number(draft.length) }),
-        ...(draft.mass !== saved.mass && { massKg: Number(draft.mass) }),
-        ...(draft.angle !== saved.angle && { initialAngleRad: radians(Number(draft.angle)) }),
-      });
+      await client.updateConfig(changeOf(pendulum.id, draft, saved)!);
       setDraft(undefined);
     } catch (e) {
       setError(readable(ConnectError.from(e).rawMessage));
@@ -146,17 +120,15 @@ function anchorRangeOf(pendulums: PendulumView[]): Range {
   return { min: Math.floor(Math.min(...anchors) - 2), max: Math.ceil(Math.max(...anchors) + 2) };
 }
 
-export function ConfigTable({ pendulums, editable }: { pendulums: PendulumView[]; editable: boolean }) {
+export function ConfigTable({ pendulums, editable, drafts }: { pendulums: PendulumView[]; editable: boolean; drafts: Drafts }) {
   const anchorRange = anchorRangeOf(pendulums);
-  // Bumping it remounts the rows, which drops unsent edits after a reset to defaults.
-  const [generation, setGeneration] = useState(0);
   const [resetError, setResetError] = useState<string>();
 
   async function resetToDefaults() {
     setResetError(undefined);
     try {
       await client.resetConfig({});
-      setGeneration((g) => g + 1);
+      drafts.clearAll();
     } catch (e) {
       setResetError(ConnectError.from(e).rawMessage);
     }
@@ -205,7 +177,7 @@ export function ConfigTable({ pendulums, editable }: { pendulums: PendulumView[]
             {pendulums
               .filter((p) => p.config)
               .map((p) => (
-                <Row key={`${p.id}-${generation}`} pendulum={p} editable={editable} anchorRange={anchorRange} />
+                <Row key={p.id} pendulum={p} editable={editable} anchorRange={anchorRange} drafts={drafts} />
               ))}
           </tbody>
         </table>

@@ -1,7 +1,7 @@
 import { create } from "@bufbuild/protobuf";
 import { PendulumPhase, PendulumViewSchema } from "@pendulums/shared";
 import { describe, expect, test } from "vitest";
-import { isEditable, restartCountdownS, swingFrame, systemState } from "../src/scene";
+import { type Draft, draftOf, isEditable, pendingUpdates, restartCountdownS, swingFrame, systemState } from "../src/scene";
 
 const { STOPPED, RUNNING, PAUSED, HALTED, WAITING } = PendulumPhase;
 const pendulum = (phase: PendulumPhase, restartInMs = 0) => create(PendulumViewSchema, { phase, restartInMs });
@@ -57,5 +57,34 @@ describe("swingFrame", () => {
     const frame = swingFrame([]);
     expect(frame.xM).toBeCloseTo(-0.15);
     expect(frame.widthM).toBeCloseTo(2.3);
+  });
+});
+
+describe("pendingUpdates", () => {
+  const view = (id: number, lengthM = 1) =>
+    create(PendulumViewSchema, { id, config: { anchorXM: id, lengthM, massKg: 1, initialAngleRad: 0.5 } });
+  const draft = (p: ReturnType<typeof view>, changes: Partial<Draft> = {}): Draft => ({ ...draftOf(p), ...changes });
+
+  test("no drafts means nothing to apply", () => {
+    expect(pendingUpdates({}, [view(1), view(2)])).toEqual([]);
+  });
+
+  test("a draft equal to the applied config is left out", () => {
+    const p = view(1);
+    expect(pendingUpdates({ 1: draft(p) }, [p])).toEqual([]);
+  });
+
+  test("only the changed field is sent", () => {
+    const p = view(1);
+    expect(pendingUpdates({ 1: draft(p, { length: "2" }) }, [p])).toEqual([{ id: 1, lengthM: 2 }]);
+  });
+
+  test("several rows come back in pendulum order, skipping unchanged ones", () => {
+    const [a, b, c] = [view(1), view(2), view(3)];
+    const drafts = { 3: draft(c, { mass: "4" }), 1: draft(a, { angle: "90" }), 2: draft(b) };
+    expect(pendingUpdates(drafts, [a, b, c])).toEqual([
+      { id: 1, initialAngleRad: Math.PI / 2 },
+      { id: 3, massKg: 4 },
+    ]);
   });
 });

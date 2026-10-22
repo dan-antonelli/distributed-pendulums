@@ -13,7 +13,58 @@ export function systemState(pendulums: PendulumView[]): SystemState {
   return "stopped";
 }
 
-export const isEditable = (pendulums: PendulumView[]) => pendulums.every((p) => p.phase === STOPPED);
+export interface Draft {
+  anchor: string;
+  length: string;
+  mass: string;
+  angle: string;
+}
+
+export interface ConfigChange {
+  id: number;
+  anchorXM?: number;
+  lengthM?: number;
+  massKg?: number;
+  initialAngleRad?: number;
+}
+
+const degrees = (rad: number) => Math.round((rad * 180) / Math.PI);
+const radians = (deg: number) => (deg * Math.PI) / 180;
+const round = (value: number) => String(Math.round(value * 100) / 100);
+
+export function draftOf(p: PendulumView): Draft {
+  const c = p.config!;
+  return { anchor: round(c.anchorXM), length: round(c.lengthM), mass: round(c.massKg), angle: String(degrees(c.initialAngleRad)) };
+}
+
+export function changeOf(id: number, draft: Draft, saved: Draft): ConfigChange | undefined {
+  const change: ConfigChange = {
+    id,
+    ...(draft.anchor !== saved.anchor && { anchorXM: Number(draft.anchor) }),
+    ...(draft.length !== saved.length && { lengthM: Number(draft.length) }),
+    ...(draft.mass !== saved.mass && { massKg: Number(draft.mass) }),
+    ...(draft.angle !== saved.angle && { initialAngleRad: radians(Number(draft.angle)) }),
+  };
+  return Object.keys(change).length > 1 ? change : undefined;
+}
+
+export function pendingUpdates(drafts: Record<number, Draft>, pendulums: PendulumView[]): ConfigChange[] {
+  return pendulums.flatMap((p) => {
+    const draft = drafts[p.id];
+    const change = draft && p.config ? changeOf(p.id, draft, draftOf(p)) : undefined;
+    return change ? [change] : [];
+  });
+}
+
+export function readable(message: string): string {
+  return message
+    .replace(/initial_angle_rad must be between [^;]+/, "Start angle must be between -90° and 90°")
+    .replace("anchor_x_m", "Anchor")
+    .replace("length_m", "Length")
+    .replace("mass_kg", "Mass");
+}
+
+export const isEditable =(pendulums: PendulumView[]) => pendulums.every((p) => p.phase === STOPPED);
 
 export function restartCountdownS(pendulums: PendulumView[]): number | undefined {
   const waiting = pendulums.filter((p) => p.phase === WAITING);

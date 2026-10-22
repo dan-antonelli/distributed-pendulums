@@ -3,6 +3,7 @@ import { ConfigTable } from "./components/ConfigTable";
 import { Controls } from "./components/Controls";
 import { Stage } from "./components/Stage";
 import { isEditable, systemState } from "./scene";
+import { useDrafts } from "./useDrafts";
 import { type Connection, usePendulums } from "./usePendulums";
 
 const connectionLabel: Record<Connection, string> = {
@@ -13,6 +14,7 @@ const connectionLabel: Record<Connection, string> = {
 
 export function App() {
   const { pendulums, connection } = usePendulums();
+  const drafts = useDrafts();
   const state = systemState(pendulums);
 
   return (
@@ -25,7 +27,7 @@ export function App() {
             {connection === "live" && `, ${pendulums.length} ${pendulums.length === 1 ? "server" : "servers"}`}
           </p>
         </div>
-        <Controls state={state} />
+        <Controls state={state} pendulums={pendulums} drafts={drafts} />
       </header>
 
       {connection === "reconnecting" && pendulums.length === 0 ? (
@@ -37,7 +39,7 @@ export function App() {
       ) : (
         <>
           <Stage pendulums={pendulums} />
-          <ConfigTable pendulums={pendulums} editable={isEditable(pendulums)} />
+          <ConfigTable pendulums={pendulums} editable={isEditable(pendulums)} drafts={drafts} />
         </>
       )}
     </main>
