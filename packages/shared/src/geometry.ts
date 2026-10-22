@@ -1,7 +1,9 @@
 import type { PendulumConfig } from "./gen/pendulum/v1/pendulum_pb";
 
 // Every bob is a ball of the same material: 8 times the mass gives twice the radius.
-const RADIUS_M_PER_CUBE_ROOT_KG = 0.1;
+export const RADIUS_M_PER_CUBE_ROOT_KG = 0.1;
+
+export const CONTACT_MARGIN_M = 0;
 
 export function bobRadiusM(massKg: number): number {
   return RADIUS_M_PER_CUBE_ROOT_KG * Math.cbrt(massKg);
@@ -21,7 +23,7 @@ export interface Bob {
 }
 
 export function isTouching(a: Bob, b: Bob): boolean {
-  return Math.hypot(a.xM - b.xM, a.yM - b.yM) < a.radiusM + b.radiusM;
+  return Math.hypot(a.xM - b.xM, a.yM - b.yM) < a.radiusM + b.radiusM + CONTACT_MARGIN_M;
 }
 
 export function startingBob(config: PendulumConfig): Bob {

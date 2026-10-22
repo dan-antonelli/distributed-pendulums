@@ -1,6 +1,6 @@
 import { create } from "@bufbuild/protobuf";
 import { describe, expect, test } from "vitest";
-import { type Bob, PendulumConfigSchema, bobPosition, bobRadiusM, isTouching } from "../src";
+import { type Bob, CONTACT_MARGIN_M, PendulumConfigSchema, bobPosition, bobRadiusM, isTouching } from "../src";
 
 const bob = (xM: number, yM = 1, radiusM = 0.1): Bob => ({ xM, yM, radiusM });
 
@@ -35,5 +35,11 @@ describe("isTouching", () => {
 
   test("a bigger bob reaches further: same gap, touching once one bob is heavier", () => {
     expect(isTouching(bob(0), bob(0.25, 1, 0.2))).toBe(true);
+  });
+
+  test("the threshold is the two radii plus the contact margin: just inside touches, just outside does not", () => {
+    const thresholdM = 0.1 + 0.2 + CONTACT_MARGIN_M;
+    expect(isTouching(bob(0, 1, 0.1), bob(thresholdM - 1e-6, 1, 0.2))).toBe(true);
+    expect(isTouching(bob(0, 1, 0.1), bob(thresholdM + 1e-6, 1, 0.2))).toBe(false);
   });
 });

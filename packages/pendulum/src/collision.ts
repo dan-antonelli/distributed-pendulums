@@ -1,9 +1,9 @@
-import { type Bob, type PendulumConfig, bobRadiusM, isTouching } from "@pendulums/shared";
+import { type Bob, CONTACT_MARGIN_M, type PendulumConfig, bobRadiusM, isTouching } from "@pendulums/shared";
 
 // A bob never gets further from its anchor than its string length, so anchors further apart
 // than both strings plus both radii can never touch.
 export function canReach(a: PendulumConfig, b: PendulumConfig): boolean {
-  const maxReachM = a.lengthM + b.lengthM + bobRadiusM(a.massKg) + bobRadiusM(b.massKg);
+  const maxReachM = a.lengthM + b.lengthM + bobRadiusM(a.massKg) + bobRadiusM(b.massKg) + CONTACT_MARGIN_M;
   return Math.abs(a.anchorXM - b.anchorXM) < maxReachM;
 }
 

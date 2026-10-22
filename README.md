@@ -41,6 +41,8 @@ Each pendulum server runs the physics at 60 steps a second and publishes its bob
 
 ### The collision cycle
 
+Two bobs touch when their centers are closer than their radii added together, where a radius is 0.1 m times the cube root of the mass in kg. `CONTACT_MARGIN_M` in `packages/shared/src/geometry.ts` adds a margin to that distance and is 0 today.
+
 1. A server sees its bob start touching a neighbor's bob. It sends STOP with the next cycle number.
 2. Every server freezes, writes down which peers are alive right now (its participants for this cycle), and sends RESTART.
 3. Once a server has RESTART from every participant, it sends READY: "I have heard from everyone."
@@ -121,7 +123,7 @@ npm test
 npm run typecheck
 ```
 
-There are 105 tests in 16 files. They cover the physics, collisions and neighbors, the state machine, a five-server collision cycle on an in-memory bus with fake timers, the gateway API through Connect's in-memory transport, and the UI's pure helpers. The five-server test covers a full cycle, two servers reporting the same collision, a lost RESTART, a server that missed the STOP, a server dying mid-cycle, and a user stop during the wait.
+There are 106 tests in 16 files. They cover the physics, collisions and neighbors, the state machine, a five-server collision cycle on an in-memory bus with fake timers, the gateway API through Connect's in-memory transport, and the UI's pure helpers. The five-server test covers a full cycle, two servers reporting the same collision, a lost RESTART, a server that missed the STOP, a server dying mid-cycle, and a user stop during the wait.
 
 The UI component tests run in jsdom with Testing Library against the real Connect client and an in-memory fake `SimulationService`. They cover the configuration table (edit, Apply, Reset, locking while running, Randomize applying in order), Start blocked by unapplied edits, the stage (bobs, collision status, zoom) and the app showing a streamed snapshot.
 
