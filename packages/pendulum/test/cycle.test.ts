@@ -9,8 +9,8 @@ const { STOPPED, RUNNING, HALTED, READY, WAITING } = PendulumPhase;
 const IN_CYCLE = new Set([HALTED, READY, WAITING]);
 const TICK_MS = 1000 / 60;
 
-// Five real controllers on one fake bus. Pendulums 1 and 2 swing toward each other and collide
-// within about a second. 3, 4 and 5 hang still, far enough away to never be hit.
+// Pendulums 1 and 2 swing toward each other and collide within about a second.
+// 3, 4 and 5 hang still, far enough away to never be hit.
 let bus: InMemoryBus;
 let servers: PendulumController[];
 let user: ReturnType<typeof actAs>;
@@ -33,8 +33,6 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-// Advances time in fixed steps, ticking every server, like the real loop does.
-// Stops early if `until` becomes true. Returns whether it did.
 function run(ms: number, until?: () => boolean): boolean {
   for (const end = clockMs + ms; clockMs < end; clockMs += TICK_MS) {
     vi.advanceTimersByTime(TICK_MS);
@@ -66,7 +64,6 @@ describe("the whole collision cycle on five servers", () => {
     const times = [...restartedAtMs.values()];
     expect(times).toHaveLength(5);
     expect(Math.min(...times) - allWaitingAtMs).toBeGreaterThanOrEqual(RESTART_DELAY_MS - 100);
-    // Everyone restarts within a few ticks of each other.
     expect(Math.max(...times) - Math.min(...times)).toBeLessThan(100);
   });
 

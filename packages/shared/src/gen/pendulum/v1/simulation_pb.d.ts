@@ -86,8 +86,7 @@ export declare type PendulumView = Message<"pendulum.v1.PendulumView"> & {
 export declare const PendulumViewSchema: GenMessage<PendulumView>;
 
 /**
- * Partial update: only the fields that are set change.
- * `optional` lets "not sent" differ from "set to 0".
+ * `optional` lets "not sent" differ from "set to 0": only set fields change.
  *
  * @generated from message pendulum.v1.UpdateConfigRequest
  */
@@ -233,17 +232,14 @@ export declare type StopResponse = Message<"pendulum.v1.StopResponse"> & {
 export declare const StopResponseSchema: GenMessage<StopResponse>;
 
 /**
- * The public API the browser calls, served by the gateway.
- *
- * Commands return an empty response once they are validated and broadcast.
- * That means "accepted", not "applied by every server": the bus has no replies.
+ * An empty command response means "accepted", not "applied by every server": the bus has no replies.
  * The real effect shows up on the WatchPendulums stream.
  *
  * @generated from service pendulum.v1.SimulationService
  */
 export declare const SimulationService: GenService<{
   /**
-   * A full snapshot of every live pendulum, every 50 ms, until the client disconnects.
+   * A full snapshot of every live pendulum, every 50 ms.
    *
    * @generated from rpc pendulum.v1.SimulationService.WatchPendulums
    */
@@ -264,7 +260,7 @@ export declare const SimulationService: GenService<{
     output: typeof UpdateConfigResponseSchema;
   },
   /**
-   * Every pendulum goes back to its default config. Errors: FAILED_PRECONDITION (simulation not stopped).
+   * Errors: FAILED_PRECONDITION (simulation not stopped).
    *
    * @generated from rpc pendulum.v1.SimulationService.ResetConfig
    */

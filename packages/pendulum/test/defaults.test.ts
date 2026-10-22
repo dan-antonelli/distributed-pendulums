@@ -3,7 +3,6 @@ import { describe, expect, test } from "vitest";
 import { defaultConfig } from "../src/defaults";
 import { type Motion, STEP_S, step } from "../src/physics";
 
-// The demo promise: start it, and a collision happens within a couple of seconds.
 function secondsUntilFirstCollision(serverCount: number): number | undefined {
   const configs = Array.from({ length: serverCount }, (_, i) => defaultConfig(i + 1));
   let motions: Motion[] = configs.map((c) => ({ angleRad: c.initialAngleRad, velocityRadS: 0 }));

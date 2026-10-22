@@ -1,4 +1,3 @@
-// Width axis included: headings use a slightly wider cut (font-stretch).
 import "@fontsource-variable/archivo/wdth.css";
 import "./index.css";
 import { StrictMode } from "react";

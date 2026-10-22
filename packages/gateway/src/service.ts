@@ -18,10 +18,9 @@ import type { SystemView } from "./view";
 
 export const SNAPSHOT_INTERVAL_MS = 50;
 
-// The public API. Every command is validated here, then broadcast on the bus.
 // A successful response means "accepted and broadcast", not "applied": the bus has no replies.
 export function simulationService(bus: Bus, view: SystemView): ServiceImpl<typeof SimulationService> {
-  // Waits for Redis to accept the message, so a command never reports success while Redis is down.
+  // Awaited, so a command never reports success while Redis is down.
   const broadcast = async (body: MessageInitShape<typeof BusMessageSchema>["body"]) => {
     try {
       await bus.publish(channels.control, create(BusMessageSchema, { body }));
@@ -39,11 +38,10 @@ export function simulationService(bus: Bus, view: SystemView): ServiceImpl<typeo
       try {
         while (true) {
           yield { pendulums: view.snapshot() };
-          // Node's abortable sleep cleans up after itself. A hand-written one leaked a listener per snapshot.
+          // A hand-written abortable sleep leaked a listener per snapshot.
           await sleep(SNAPSHOT_INTERVAL_MS, undefined, { signal: context.signal });
         }
       } catch (error) {
-        // The client went away: end the stream quietly. Anything else is a real error.
         if (!context.signal.aborted) throw error;
       }
     },
@@ -51,12 +49,11 @@ export function simulationService(bus: Bus, view: SystemView): ServiceImpl<typeo
     async updateConfig(request) {
       const current = view.get(request.id);
       if (!current?.config) throw new ConnectError(`no pendulum with id ${request.id}`, Code.NotFound);
-      // Best effort: this view can be a moment old. The pendulum server has the final say.
+      // Best effort: the view can be a moment old, so the pendulum server has the final say.
       if (current.phase !== PendulumPhase.STOPPED) {
         throw new ConnectError("stop the simulation before changing a pendulum", Code.FailedPrecondition);
       }
 
-      // Partial update: fields the client didn't send keep their current value.
       const config = create(PendulumConfigSchema, {
         anchorXM: request.anchorXM ?? current.config.anchorXM,
         lengthM: request.lengthM ?? current.config.lengthM,
@@ -77,7 +74,7 @@ export function simulationService(bus: Bus, view: SystemView): ServiceImpl<typeo
     },
 
     async resetConfig() {
-      // Best effort, like updateConfig: each pendulum also ignores the reset unless it's stopped.
+      // Best effort, like updateConfig.
       if (view.snapshot().some((p) => p.phase !== PendulumPhase.STOPPED)) {
         throw new ConnectError("stop the simulation before resetting the pendulums", Code.FailedPrecondition);
       }

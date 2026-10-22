@@ -1,9 +1,7 @@
-# One Dockerfile, one image per service (targets: pendulum, gateway, ui).
 # Debian-based Node, not Alpine: the UI build uses native binaries that target glibc.
 
 FROM node:24-slim AS deps
 WORKDIR /app
-# Manifests first, so dependencies are cached until a package.json or the lockfile changes.
 COPY package.json package-lock.json ./
 COPY packages/shared/package.json packages/shared/
 COPY packages/pendulum/package.json packages/pendulum/
@@ -15,7 +13,6 @@ FROM deps AS source
 COPY tsconfig.base.json tsconfig.json ./
 COPY packages packages
 
-# Servers run their TypeScript directly with tsx: no build step.
 FROM source AS pendulum
 CMD ["node", "--import", "tsx", "packages/pendulum/src/main.ts"]
 

@@ -4,7 +4,6 @@ const { STOPPED, RUNNING, PAUSED, HALTED, READY, WAITING } = PendulumPhase;
 
 export type SystemState = "empty" | "stopped" | "running" | "paused" | "collision";
 
-// One word for the whole system, derived from every pendulum's phase.
 export function systemState(pendulums: PendulumView[]): SystemState {
   if (pendulums.length === 0) return "empty";
   const phases = new Set(pendulums.map((p) => p.phase));
@@ -16,7 +15,6 @@ export function systemState(pendulums: PendulumView[]): SystemState {
 
 export const isEditable = (pendulums: PendulumView[]) => pendulums.every((p) => p.phase === STOPPED);
 
-// Seconds until the collision cycle restarts, or undefined if nobody is waiting yet.
 export function restartCountdownS(pendulums: PendulumView[]): number | undefined {
   const waiting = pendulums.filter((p) => p.phase === WAITING);
   if (waiting.length === 0) return undefined;
@@ -25,13 +23,10 @@ export function restartCountdownS(pendulums: PendulumView[]): number | undefined
 
 const SIDE_MARGIN_M = 0.15;
 const BOTTOM_MARGIN_M = 0.1;
-// Room above the beam for the pendulum numbers.
 const TOP_M = 0.3;
 
-// The area to frame, in meters: everywhere a bob can actually go, plus a small margin.
-// A frictionless pendulum never swings wider than the angle it started from, so each bob's sideways
-// reach is length × sin(starting angle), not its full length. Its lowest point is straight down.
-// Only the outermost and the longest pendulums shape the frame; editing any other one moves nothing.
+// A frictionless pendulum never swings wider than its starting angle, so sideways reach is
+// length × sin(starting angle), not its full length. Its lowest point is straight down.
 export function swingFrame(pendulums: PendulumView[]) {
   const configs = pendulums.flatMap((p) => (p.config ? [p.config] : []));
   if (configs.length === 0) return { xM: -SIDE_MARGIN_M, yM: -TOP_M, widthM: 2 + 2 * SIDE_MARGIN_M, heightM: 1 + TOP_M };

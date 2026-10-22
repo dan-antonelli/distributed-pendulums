@@ -2,7 +2,6 @@ syntax = "proto3";
 
 package pendulum.v1;
 
-// Types shared by the internal bus (bus.proto) and the public API (simulation.proto).
 // Units are in the field names: meters, kilograms, radians.
 // Coordinates: x grows to the right, y grows downward from the anchor line.
 

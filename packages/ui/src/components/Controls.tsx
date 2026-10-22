@@ -5,7 +5,6 @@ import type { SystemState } from "../scene";
 
 type Action = "start" | "pause" | "stop";
 
-// What each button may do in each state. During a collision cycle only Stop works.
 const enabled: Record<SystemState, Action[]> = {
   empty: [],
   stopped: ["start"],

@@ -8,7 +8,6 @@ import { SystemView } from "./view";
 
 const redisUrl = process.env.REDIS_URL ?? "redis://localhost:6379";
 const port = Number(process.env.PORT ?? 8080);
-// The UI runs on another port, so the browser needs permission to call us (CORS).
 const allowedOrigin = process.env.ALLOWED_ORIGIN ?? "*";
 
 const redis = await connectRedis(redisUrl);

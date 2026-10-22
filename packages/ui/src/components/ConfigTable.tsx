@@ -7,7 +7,6 @@ const degrees = (rad: number) => Math.round((rad * 180) / Math.PI);
 const radians = (deg: number) => (deg * Math.PI) / 180;
 const round = (value: number) => String(Math.round(value * 100) / 100);
 
-// The API speaks in field names and radians; the form speaks in labels and degrees.
 function readable(message: string): string {
   return message
     .replace(/initial_angle_rad must be between [^;]+/, "Start angle must be between -90° and 90°")
@@ -49,7 +48,6 @@ function Row({ pendulum, editable, anchorRange }: { pendulum: PendulumView; edit
   const [error, setError] = useState<string>();
   const shown = draft ?? saved;
 
-  // A box for an exact value, with a slider under it for quick adjustment, both editing the same draft.
   // While the box holds something that isn't a number yet (mid-typing), the slider shows the saved value.
   const field = (key: keyof Draft, label: string, range: Range, step: number) => {
     const update = (value: string) => setDraft({ ...shown, [key]: value });
@@ -87,7 +85,6 @@ function Row({ pendulum, editable, anchorRange }: { pendulum: PendulumView; edit
     if (!draft) return;
     setError(undefined);
     try {
-      // Send only what changed: the API merges partial updates.
       await client.updateConfig({
         id: pendulum.id,
         ...(draft.anchor !== saved.anchor && { anchorXM: Number(draft.anchor) }),
@@ -115,8 +112,7 @@ function Row({ pendulum, editable, anchorRange }: { pendulum: PendulumView; edit
           <span className="column-block">{phaseLabel[pendulum.phase]}</span>
         </td>
         <td className="col-edge">
-          {/* Both always visible, so the cell never changes shape. Reset only undoes unsent edits,
-              so it's disabled when there are none, including right after it's pressed. */}
+          {/* Both always rendered, so the cell never changes shape. */}
           <div className="row-actions">
             <button type="button" disabled={!editable || !changed} onClick={apply}>
               Apply
@@ -143,8 +139,7 @@ function Row({ pendulum, editable, anchorRange }: { pendulum: PendulumView; edit
   );
 }
 
-// The anchor slider spans the array plus 2 m on each side, from the saved configs, so it doesn't jump while dragging.
-// The box still accepts any position further out.
+// Computed from the saved configs, so the slider doesn't jump while dragging. The box accepts any position.
 function anchorRangeOf(pendulums: PendulumView[]): Range {
   const anchors = pendulums.flatMap((p) => (p.config ? [p.config.anchorXM] : []));
   if (anchors.length === 0) return { min: 0, max: 5 };
@@ -153,7 +148,7 @@ function anchorRangeOf(pendulums: PendulumView[]): Range {
 
 export function ConfigTable({ pendulums, editable }: { pendulums: PendulumView[]; editable: boolean }) {
   const anchorRange = anchorRangeOf(pendulums);
-  // Bumped after a reset to defaults: it remounts the rows, which drops any unsent edits along with them.
+  // Bumping it remounts the rows, which drops unsent edits after a reset to defaults.
   const [generation, setGeneration] = useState(0);
   const [resetError, setResetError] = useState<string>();
 

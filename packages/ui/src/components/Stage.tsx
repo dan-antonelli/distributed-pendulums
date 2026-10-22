@@ -33,7 +33,6 @@ function statusText(pendulums: PendulumView[]): string {
   }
 }
 
-// The box's height is fixed by CSS and never changes with the pendulums, so nothing below it moves.
 function useBoxHeight() {
   const ref = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState(0);
@@ -47,7 +46,6 @@ function useBoxHeight() {
   return { ref, height };
 }
 
-// Everything is drawn in meters. At 100% the frame fills the box's height; wider arrays scroll sideways.
 export function Stage({ pendulums }: { pendulums: PendulumView[] }) {
   const { ref, height } = useBoxHeight();
   const [zoomStep, setZoomStep] = useState(ZOOM_STEPS.indexOf(1));

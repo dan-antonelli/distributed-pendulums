@@ -1,11 +1,9 @@
 import { create } from "@bufbuild/protobuf";
 import { type BusMessage, type PendulumConfig, type PendulumView, PendulumViewSchema } from "@pendulums/shared";
 
-// A pendulum silent this long disappears from the UI. Shorter than the servers' 5 s:
-// a wrong guess here only affects the display, never the collision cycle.
+// Shorter than the servers' 5 s: a wrong guess here only affects the display, never the collision cycle.
 export const STALE_AFTER_MS = 2000;
 
-// The gateway's picture of the system, built only from what it hears on the bus.
 export class SystemView {
   private readonly pendulums = new Map<number, { view: PendulumView; lastSeenMs: number }>();
 
@@ -22,14 +20,13 @@ export class SystemView {
         phase,
         cycle,
         restartInMs,
-        // Keep the last known bob position; positions arrive far more often than heartbeats.
+        // Positions arrive far more often than heartbeats, so keep the last known one.
         bobXM: existing?.bobXM ?? config.anchorXM,
         bobYM: existing?.bobYM ?? config.lengthM,
       });
       this.pendulums.set(id, { view, lastSeenMs: now });
     } else if (body.case === "position") {
       const entry = this.pendulums.get(body.value.id);
-      // A position before the first heartbeat has no config to go with it. Wait for the heartbeat.
       if (!entry) return;
       entry.view.bobXM = body.value.bobXM;
       entry.view.bobYM = body.value.bobYM;
@@ -38,8 +35,7 @@ export class SystemView {
     }
   };
 
-  // Called right after the gateway sends a new config, before the pendulum's heartbeat confirms it.
-  // A second quick edit then merges with this one instead of the old config, so neither is lost.
+  // Optimistic, so a second quick edit merges with this one instead of the old config.
   // If the pendulum rejects the change, its next heartbeat puts the real config back.
   rememberSentConfig(id: number, config: PendulumConfig): void {
     const entry = this.pendulums.get(id);
@@ -56,7 +52,6 @@ export class SystemView {
     return configs;
   }
 
-  // Every live pendulum, by id. Drops the ones that went silent.
   snapshot(): PendulumView[] {
     const cutoff = Date.now() - STALE_AFTER_MS;
     for (const [id, { lastSeenMs }] of this.pendulums) if (lastSeenMs < cutoff) this.pendulums.delete(id);

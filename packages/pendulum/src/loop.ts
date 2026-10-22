@@ -1,19 +1,16 @@
 import { STEP_S } from "./physics";
 
-// After a long freeze, run at most this many steps at once and drop the rest.
 export const MAX_STEPS_PER_TICK = 5;
 
-// Pure: given how much time has piled up, how many fixed steps to run and how much time to carry over.
 export function planSteps(accumulatedS: number, stepS: number): { steps: number; leftoverS: number } {
   const due = Math.floor(accumulatedS / stepS);
   if (due > MAX_STEPS_PER_TICK) {
-    // Too far behind. Catching up fully would take long enough to fall behind again (the "spiral of death").
+    // Catching up fully would take long enough to fall behind again (the "spiral of death"), so drop the rest.
     return { steps: MAX_STEPS_PER_TICK, leftoverS: 0 };
   }
   return { steps: due, leftoverS: accumulatedS - due * stepS };
 }
 
-// Fixed-step loop: physics always advances by exactly STEP_S, however late the timer fires.
 export function startLoop(onStep: () => void): () => void {
   let lastMs = performance.now();
   let accumulatedS = 0;

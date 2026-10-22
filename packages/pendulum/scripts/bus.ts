@@ -1,7 +1,3 @@
-// Dev tool: talk to the bus by hand, before the gateway and UI exist.
-//   npm run bus -w @pendulums/pendulum -- send start|pause|stop
-//   npm run bus -w @pendulums/pendulum -- watch
-// Redis messages are binary protobuf, so redis-cli shows unreadable bytes. This decodes them.
 import { create, toJson } from "@bufbuild/protobuf";
 import { BusMessageSchema, CommandType, channels } from "@pendulums/shared";
 import { connectRedis } from "@pendulums/shared/redis";

@@ -4,20 +4,17 @@ package pendulum.v1;
 
 import "pendulum/v1/pendulum.proto";
 
-// The public API the browser calls, served by the gateway.
-//
-// Commands return an empty response once they are validated and broadcast.
-// That means "accepted", not "applied by every server": the bus has no replies.
+// An empty command response means "accepted", not "applied by every server": the bus has no replies.
 // The real effect shows up on the WatchPendulums stream.
 service SimulationService {
-  // A full snapshot of every live pendulum, every 50 ms, until the client disconnects.
+  // A full snapshot of every live pendulum, every 50 ms.
   rpc WatchPendulums(WatchPendulumsRequest) returns (stream WatchPendulumsResponse);
 
   // Errors: INVALID_ARGUMENT (bad values or bobs would start touching),
   // NOT_FOUND (unknown id), FAILED_PRECONDITION (simulation not stopped).
   rpc UpdateConfig(UpdateConfigRequest) returns (UpdateConfigResponse);
 
-  // Every pendulum goes back to its default config. Errors: FAILED_PRECONDITION (simulation not stopped).
+  // Errors: FAILED_PRECONDITION (simulation not stopped).
   rpc ResetConfig(ResetConfigRequest) returns (ResetConfigResponse);
 
   rpc Start(StartRequest) returns (StartResponse);
@@ -41,8 +38,7 @@ message PendulumView {
   uint32 restart_in_ms = 7;
 }
 
-// Partial update: only the fields that are set change.
-// `optional` lets "not sent" differ from "set to 0".
+// `optional` lets "not sent" differ from "set to 0": only set fields change.
 message UpdateConfigRequest {
   uint32 id = 1;
   optional double anchor_x_m = 2;

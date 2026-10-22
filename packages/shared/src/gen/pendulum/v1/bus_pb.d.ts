@@ -12,8 +12,6 @@ import type { PendulumConfig, PendulumPhase } from "./pendulum_pb";
 export declare const file_pendulum_v1_bus: GenFile;
 
 /**
- * Every Redis message is one BusMessage, so a receiver decodes once and switches on `body`.
- *
  * @generated from message pendulum.v1.BusMessage
  */
 export declare type BusMessage = Message<"pendulum.v1.BusMessage"> & {
@@ -73,7 +71,7 @@ export declare const BusMessageSchema: GenMessage<BusMessage>;
 
 /**
  * 5 per second on the shared heartbeat channel, in every phase.
- * Used for membership, neighbor discovery, catching up on a missed STOP, and the gateway's view.
+ * Drives membership, neighbor discovery, catching up on a missed STOP, and the gateway's view.
  *
  * @generated from message pendulum.v1.Heartbeat
  */
@@ -116,7 +114,6 @@ export declare const HeartbeatSchema: GenMessage<Heartbeat>;
 
 /**
  * 60 per second, on the sender's own channel. Only pendulums within reach subscribe.
- * Carries the bob's position directly, so receivers don't need the sender's config to check collisions.
  *
  * @generated from message pendulum.v1.Position
  */
@@ -137,8 +134,8 @@ export declare type Position = Message<"pendulum.v1.Position"> & {
   bobYM: number;
 
   /**
-   * Added in step 4: neighbors only count collisions with bobs that are actually running.
-   * Without it, a pendulum that restarts a few ms early sees its neighbor still frozen at the old collision spot.
+   * Only running bobs count for collisions: a pendulum that restarts a few ms early
+   * would otherwise see its neighbor still frozen at the old collision spot.
    *
    * @generated from field: pendulum.v1.PendulumPhase phase = 4;
    */
@@ -152,8 +149,6 @@ export declare type Position = Message<"pendulum.v1.Position"> & {
 export declare const PositionSchema: GenMessage<Position>;
 
 /**
- * Collision STOP. Starts cycle `cycle` everywhere.
- *
  * @generated from message pendulum.v1.Stop
  */
 export declare type Stop = Message<"pendulum.v1.Stop"> & {
@@ -182,7 +177,7 @@ export declare type Stop = Message<"pendulum.v1.Stop"> & {
 export declare const StopSchema: GenMessage<Stop>;
 
 /**
- * "I have halted for this cycle." Resent every second until the cycle moves on.
+ * Resent every second until the cycle moves on.
  *
  * @generated from message pendulum.v1.Restart
  */
@@ -205,7 +200,7 @@ export declare type Restart = Message<"pendulum.v1.Restart"> & {
 export declare const RestartSchema: GenMessage<Restart>;
 
 /**
- * "I have RESTART from every participant." Resent every second until the cycle moves on.
+ * Resent every second until the cycle moves on.
  *
  * @generated from message pendulum.v1.Ready
  */
@@ -228,8 +223,6 @@ export declare type Ready = Message<"pendulum.v1.Ready"> & {
 export declare const ReadySchema: GenMessage<Ready>;
 
 /**
- * User commands, forwarded by the gateway. Apply to every pendulum.
- *
  * @generated from message pendulum.v1.Command
  */
 export declare type Command = Message<"pendulum.v1.Command"> & {
@@ -246,8 +239,6 @@ export declare type Command = Message<"pendulum.v1.Command"> & {
 export declare const CommandSchema: GenMessage<Command>;
 
 /**
- * A complete, validated config for one pendulum. The gateway merges partial API updates first.
- *
  * @generated from message pendulum.v1.ConfigUpdate
  */
 export declare type ConfigUpdate = Message<"pendulum.v1.ConfigUpdate"> & {

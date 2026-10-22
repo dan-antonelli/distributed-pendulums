@@ -35,7 +35,7 @@ describe("swingFrame", () => {
     create(PendulumViewSchema, { config: { anchorXM, lengthM, massKg: 1, initialAngleRad } });
 
   test("frames where the bobs can actually swing, wherever the pendulums hang", () => {
-    // Ids keep climbing while Redis runs, and anchors follow the id, so pendulums can sit far from 0 m.
+    // Anchors follow the id, so pendulums can sit far from 0 m.
     // At 30 degrees a 1 m pendulum reaches 0.5 m sideways, plus its 0.1 m bob, plus the 0.15 m margin.
     const frame = swingFrame([pendulum(14.7), pendulum(17.5)]);
     expect(frame.xM).toBeCloseTo(14.7 - 0.75);

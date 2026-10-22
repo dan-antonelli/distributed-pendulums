@@ -21,9 +21,7 @@ import { defaultConfig } from "./defaults";
 import { type Motion, step } from "./physics";
 
 export const HEARTBEAT_INTERVAL_MS = 200;
-// A peer silent for this long is treated as gone.
 export const PEER_TIMEOUT_MS = 5000;
-// RESTART and READY are resent this often during a cycle, in case one was lost.
 export const RESEND_INTERVAL_MS = 1000;
 export const RESTART_DELAY_MS = 5000;
 
@@ -37,8 +35,7 @@ interface Peer {
   lastSeenMs: number;
 }
 
-// One pendulum server's logic: its state machine and its part in the collision cycle (D20).
-// It knows nothing about Redis or the clock loop; main.ts wires those in. That keeps it testable on a fake bus.
+// Knows nothing about Redis or the clock loop; main.ts wires those in, so it is testable on a fake bus.
 export class PendulumController {
   private phaseNow: PendulumPhase = STOPPED;
   private motion: Motion;
@@ -48,7 +45,6 @@ export class PendulumController {
   private readonly neighborBobs = new Map<number, Bob>();
   private touching = new Set<number>();
 
-  // The last collision cycle this server joined, and the highest number it has heard of.
   private cycleNumber = 0;
   private highestCycleSeen = 0;
   private participants = new Set<number>();
@@ -98,7 +94,6 @@ export class PendulumController {
     for (const id of this.neighbors) this.bus.unsubscribe(channels.position(id));
   }
 
-  // Called by the simulation loop once per fixed step.
   tick(dtS: number): void {
     if (this.phaseNow === RUNNING) this.motion = step(this.motion, this.config.lengthM, dtS);
 
@@ -115,8 +110,6 @@ export class PendulumController {
     this.touching = now;
     if (hitId !== undefined) this.startCycle(hitId);
   }
-
-  // --- Incoming messages ---
 
   private readonly onMessage = (message: BusMessage): void => {
     const { body } = message;
@@ -148,19 +141,17 @@ export class PendulumController {
     });
     this.highestCycleSeen = Math.max(this.highestCycleSeen, heartbeat.cycle);
 
-    // A peer is already in a newer cycle, so we missed its STOP. Join now.
     if (IN_CYCLE.has(heartbeat.phase) && heartbeat.cycle > this.cycleNumber) this.joinCycle(heartbeat.cycle);
 
-    // A peer already running again in our cycle has finished it, so it had every RESTART and READY.
-    // Count both from it. Otherwise a server that joined late could wait forever for resends that have stopped.
+    // A peer already running again in our cycle had every RESTART and READY, so count both from it.
+    // Otherwise a late joiner could wait forever for resends that have stopped.
     if (IN_CYCLE.has(this.phaseNow) && heartbeat.phase === RUNNING && heartbeat.cycle === this.cycleNumber) {
       this.restartsFrom.add(heartbeat.id);
       this.readiesFrom.add(heartbeat.id);
       this.advanceCycle();
     }
 
-    // A peer is running in a newer cycle we never saw at all (our connection was down for the whole of it).
-    // Catch up the way everyone else did: take the cycle number and restart from the starting angle.
+    // A newer cycle we never saw at all (our connection was down throughout): catch up the way everyone else did.
     if ((this.phaseNow === RUNNING || this.phaseNow === PAUSED) && heartbeat.phase === RUNNING && heartbeat.cycle > this.cycleNumber) {
       this.cycleNumber = heartbeat.cycle;
       this.restart();
@@ -171,7 +162,7 @@ export class PendulumController {
   private onPosition(position: Position): void {
     const peer = this.peers.get(position.id);
     if (!peer) return;
-    // Only running bobs count. A neighbor still frozen from the last cycle must not trigger a new one.
+    // A neighbor still frozen from the last cycle must not trigger a new one.
     if (position.phase !== RUNNING) {
       this.neighborBobs.delete(position.id);
       return;
@@ -185,12 +176,11 @@ export class PendulumController {
 
   private onStop(stop: Stop): void {
     this.highestCycleSeen = Math.max(this.highestCycleSeen, stop.cycle);
-    // Same or older cycle: a duplicate or a late message. Ignore it.
+    // A message from an old cycle is a duplicate or late: ignore it.
     if (stop.cycle > this.cycleNumber) this.joinCycle(stop.cycle);
   }
 
   private onCycleMessage(message: { fromId: number; cycle: number }, received: Set<number>): void {
-    // A RESTART or READY from a newer cycle also means we missed its STOP.
     if (message.cycle > this.cycleNumber) this.joinCycle(message.cycle);
     if (message.cycle !== this.cycleNumber || !IN_CYCLE.has(this.phaseNow)) return;
     received.add(message.fromId);
@@ -199,7 +189,7 @@ export class PendulumController {
 
   private onCommand(type: CommandType): void {
     switch (type) {
-      // Start and pause are ignored during a collision cycle. Only stop can interrupt it.
+      // Only a user stop can interrupt a collision cycle; start and pause are ignored.
       case CommandType.START:
         if (this.phaseNow === STOPPED || this.phaseNow === PAUSED) this.phaseNow = RUNNING;
         break;
@@ -210,7 +200,7 @@ export class PendulumController {
         this.stopAndReset();
         break;
       case CommandType.RESET_CONFIG:
-        // Each server knows its own default, so no config travels on the bus and no partial reset can overlap.
+        // Each server knows its own default, so no config travels on the bus.
         if (this.phaseNow === STOPPED) this.applyConfig(defaultConfig(this.id));
         break;
     }
@@ -218,7 +208,7 @@ export class PendulumController {
 
   private onConfigUpdate(update: ConfigUpdate): void {
     if (update.id !== this.id || !update.config) return;
-    // The gateway checks too, but its view can be a moment old. The server has the final say.
+    // The gateway's view can be a moment old, so the server has the final say.
     if (this.phaseNow !== STOPPED || validateConfig(update.config).length > 0) return;
     this.applyConfig(update.config);
   }
@@ -230,8 +220,6 @@ export class PendulumController {
     this.publishHeartbeat();
   }
 
-  // --- The collision cycle ---
-
   private startCycle(hitId: number): void {
     const cycle = Math.max(this.cycleNumber, this.highestCycleSeen) + 1;
     this.publish(channels.control, { case: "stop", value: { fromId: this.id, cycle, hitId } });
@@ -239,7 +227,7 @@ export class PendulumController {
   }
 
   private joinCycle(cycle: number): void {
-    // A user stop ends everything; nothing pulls a stopped pendulum into a cycle.
+    // A user stop always wins: nothing pulls a stopped pendulum into a cycle.
     if (this.phaseNow === STOPPED) return;
 
     this.clearCycleTimers();
@@ -247,7 +235,7 @@ export class PendulumController {
     this.highestCycleSeen = Math.max(this.highestCycleSeen, cycle);
     this.phaseNow = HALTED;
 
-    // Freeze who we wait for. Servers that join later don't change it.
+    // Frozen on purpose: servers that join later must not change who we wait for.
     this.participants = new Set([this.id, ...this.livePeerIds()]);
     this.restartsFrom = new Set([this.id]);
     this.readiesFrom = new Set();
@@ -259,7 +247,6 @@ export class PendulumController {
 
   private advanceCycle(): void {
     if (this.phaseNow === HALTED && this.heardFromAll(this.restartsFrom)) {
-      // "I have RESTART from everyone." Now everyone needs to know that everyone does.
       this.phaseNow = READY;
       this.readiesFrom.add(this.id);
       this.sendCycleMessages();
@@ -283,7 +270,7 @@ export class PendulumController {
 
   private restart(): void {
     this.clearCycleTimers();
-    // Back to the configured start. Resuming from the collision spot would collide again at once.
+    // Resuming from the collision spot would collide again at once.
     this.motion = this.startingMotion();
     this.touching = new Set();
     this.phaseNow = RUNNING;
@@ -301,8 +288,6 @@ export class PendulumController {
     clearInterval(this.resendTimer);
     clearTimeout(this.restartTimer);
   }
-
-  // --- Membership and neighbors ---
 
   private livePeerIds(): number[] {
     const cutoff = Date.now() - PEER_TIMEOUT_MS;
@@ -323,11 +308,9 @@ export class PendulumController {
     }
     if (!dropped) return;
     this.updateNeighbors();
-    // The one we were waiting for may be gone: check whether the cycle can move on.
     if (IN_CYCLE.has(this.phaseNow)) this.advanceCycle();
   }
 
-  // Subscribe only to the position channels of pendulums within reach.
   private updateNeighbors(): void {
     const configs = new Map([...this.peers].map(([id, peer]) => [id, peer.config]));
     const next = new Set(neighborsWithinReach(this.id, this.config, configs));
@@ -343,8 +326,6 @@ export class PendulumController {
     this.neighbors = next;
   }
 
-  // --- Outgoing ---
-
   private publishHeartbeat(): void {
     this.publish(channels.heartbeat, {
       case: "heartbeat",
@@ -359,8 +340,7 @@ export class PendulumController {
   }
 
   private publish(channel: string, body: MessageInitShape<typeof BusMessageSchema>["body"]): void {
-    // A failed publish means Redis is unreachable; the client already logs that. Positions and heartbeats
-    // are resent many times a second and cycle messages every second, so nothing here needs a retry.
+    // The Redis client already logs failures, and everything is resent soon enough that no retry is needed.
     this.bus.publish(channel, create(BusMessageSchema, { body })).catch(() => {});
   }
 

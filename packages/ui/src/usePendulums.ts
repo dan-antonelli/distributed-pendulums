@@ -6,8 +6,7 @@ export type Connection = "connecting" | "live" | "reconnecting";
 
 const MAX_RETRY_DELAY_MS = 8000;
 
-// Holds the latest snapshot from the gateway's stream.
-// Reconnects with a growing delay; every new stream starts with a full snapshot, so nothing is lost.
+// Every new stream starts with a full snapshot, so reconnecting loses nothing.
 export function usePendulums() {
   const [pendulums, setPendulums] = useState<PendulumView[]>([]);
   const [connection, setConnection] = useState<Connection>("connecting");
@@ -25,7 +24,6 @@ export function usePendulums() {
             retryDelayMs = 1000;
           }
         } catch {
-          // The stream broke, or the gateway isn't up yet. Fall through to the retry below.
         }
         if (abort.signal.aborted) return;
         setConnection("reconnecting");
@@ -35,7 +33,6 @@ export function usePendulums() {
     }
 
     void listen();
-    // Unmount (or Strict Mode's test unmount) closes the stream. No stream is ever left open.
     return () => abort.abort();
   }, []);
 

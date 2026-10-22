@@ -7,7 +7,6 @@ import { actAs, config } from "./helpers";
 
 const { STOPPED, RUNNING, HALTED, READY, WAITING } = PendulumPhase;
 
-// One real controller (id 1). The test plays peers 2 and 3 by publishing their messages.
 let controller: PendulumController;
 let peers: ReturnType<typeof actAs>;
 
@@ -58,7 +57,7 @@ describe("joining a collision cycle", () => {
     peers.stop(3, 1);
     peers.restart(3, 1);
     deliver();
-    // If the second STOP had restarted the cycle, the RESTART from 2 would be forgotten and we'd still be halted.
+    // A restarted cycle would forget the RESTART from 2 and we'd still be halted.
     expect(controller.phase).toBe(READY);
   });
 
@@ -80,12 +79,10 @@ describe("joining a collision cycle", () => {
 
 describe("catching up after a dropped connection", () => {
   test("a server that joined late still finishes once its peers have already restarted", () => {
-    // We join cycle 1 from a heartbeat, but the peers' RESTART and READY resends never reach us.
     peers.heartbeat(2, WAITING, 1);
     deliver();
     expect(controller.phase).toBe(HALTED);
 
-    // Their next heartbeats show them running in cycle 1: they finished it, so they had everything.
     peers.heartbeat(2, RUNNING, 1);
     peers.heartbeat(3, RUNNING, 1);
     deliver();
@@ -151,7 +148,7 @@ describe("the two rounds", () => {
     deliver();
     expect(controller.phase).toBe(HALTED);
 
-    // Silence is checked on each heartbeat tick, so allow one extra interval.
+    // Silence is only checked on a heartbeat tick, hence the extra interval.
     vi.advanceTimersByTime(PEER_TIMEOUT_MS + HEARTBEAT_INTERVAL_MS);
     expect(controller.phase).toBe(WAITING);
     clearInterval(keepPeer2Alive);

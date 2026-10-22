@@ -6,7 +6,6 @@ import { routes, simulationService } from "../src/service";
 import { SystemView } from "../src/view";
 import { config, heartbeat, recordingBus } from "./helpers";
 
-// The real service, called through Connect's in-memory transport: no HTTP server, no Redis.
 let bus: ReturnType<typeof recordingBus>;
 let view: SystemView;
 let client: ReturnType<typeof createClient<typeof SimulationService>>;

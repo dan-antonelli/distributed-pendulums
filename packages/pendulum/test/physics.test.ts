@@ -9,7 +9,6 @@ function run(start: Motion, steps: number, stepFn = step): Motion[] {
   return history;
 }
 
-// Height energy + movement energy, per kilogram. Constant for a frictionless pendulum.
 function energy({ angleRad, velocityRadS }: Motion): number {
   const height = GRAVITY_M_S2 * LENGTH_M * (1 - Math.cos(angleRad));
   const movement = 0.5 * (LENGTH_M * velocityRadS) ** 2;
@@ -30,7 +29,6 @@ describe("step", () => {
 
   test("a 1 m pendulum takes about 2 seconds per full swing, as in the real world", () => {
     const history = run({ angleRad: 0.1, velocityRadS: 0 }, 600);
-    // Full swing = right, left, back to the right. Find when it returns to the right-most point.
     const backAtRight = history.findIndex((m, i) => i > 30 && m.velocityRadS >= 0 && history[i + 1]!.velocityRadS < 0);
     expect(backAtRight * STEP_S).toBeCloseTo(2.0, 1);
   });
@@ -44,7 +42,6 @@ describe("step", () => {
     const lastTenSeconds = wobble(history.slice(-600));
 
     expect(firstTenSeconds).toBeLessThan(0.03);
-    // Same wobble after almost 3 minutes as at the start: bounded, not growing.
     expect(lastTenSeconds).toBeCloseTo(firstTenSeconds, 3);
   });
 
@@ -54,7 +51,6 @@ describe("step", () => {
       velocityRadS: m.velocityRadS - (GRAVITY_M_S2 / lengthM) * Math.sin(m.angleRad) * dtS,
     });
     const history = run({ angleRad: 1, velocityRadS: 0 }, 10_000, plainEuler);
-    // It ends with over 30 times the energy it started with.
     expect(energy(history.at(-1)!)).toBeGreaterThan(energy(history[0]!) * 10);
   });
 });

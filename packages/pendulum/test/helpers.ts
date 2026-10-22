@@ -14,7 +14,6 @@ export const config = (anchorXM: number, initialAngleRad = 0, lengthM = 1, massK
 
 const message = (body: MessageInitShape<typeof BusMessageSchema>["body"]) => create(BusMessageSchema, { body });
 
-// Lets a test speak on the bus as if it were other servers, or the gateway.
 export function actAs(bus: Bus) {
   return {
     heartbeat: (id: number, phase = PendulumPhase.RUNNING, cycle = 0) =>

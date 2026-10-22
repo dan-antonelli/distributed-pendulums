@@ -82,8 +82,6 @@ h2 {
   background: var(--fault);
 }
 
-/* Controls */
-
 .controls {
   display: flex;
   flex-wrap: wrap;
@@ -145,8 +143,6 @@ button.quiet:disabled {
   font-size: 0.875rem;
 }
 
-/* Stage */
-
 .stage {
   overflow: hidden;
   border: 1px solid var(--rule);
@@ -154,7 +150,7 @@ button.quiet:disabled {
   background: var(--panel);
 }
 
-/* Status and zoom. Always present and always the same height, so the box below never moves. */
+/* Always the same height, so the box below never moves. */
 .stage__bar {
   display: flex;
   align-items: center;
@@ -171,7 +167,6 @@ button.quiet:disabled {
   font-weight: 600;
 }
 
-/* The one loud element: a safety band while the collision cycle runs. */
 .stage__bar--hazard {
   background: repeating-linear-gradient(-45deg, var(--amber) 0 14px, var(--ink) 14px 28px);
 }
@@ -196,7 +191,7 @@ button.quiet:disabled {
   font-variant-numeric: tabular-nums;
 }
 
-/* Fixed height whatever the pendulums: the drawing zooms to fit instead of resizing the page. */
+/* Fixed height: the drawing zooms to fit instead of resizing the page. */
 .stage__box {
   height: clamp(260px, 42vh, 460px);
   overflow-x: auto;
@@ -271,8 +266,6 @@ button.quiet:disabled {
   fill: var(--amber);
   stroke: var(--amber-ink);
 }
-
-/* Configuration */
 
 .config {
   margin-top: 24px;
@@ -351,8 +344,7 @@ input[type="number"]:disabled {
   color: var(--ink);
 }
 
-/* A fixed-width block centered in its column. Titles, controls and the state text all use it,
-   so each title lines up with the left edge of what's under it, at any window width. */
+/* Titles, controls and state text share this width, so each title lines up with what's under it. */
 .column-block {
   display: block;
   /* rem, not em: the header font is smaller, and em would make the header blocks narrower than the cells'. */
@@ -383,9 +375,7 @@ input[type="range"]:disabled {
   color: var(--graphite);
 }
 
-/* Fixed layout: the # and actions columns get the same width, and the five middle columns share the rest
-   equally. So the middle columns are evenly spaced, and centered on the row, at any width. Below the
-   minimum width the table scrolls sideways instead of squeezing the controls. */
+/* Fixed layout keeps the middle columns evenly spaced; below min-width the table scrolls instead of squeezing the controls. */
 .config table {
   table-layout: fixed;
   min-width: 59rem;

@@ -103,10 +103,7 @@ export const StopResponseSchema = /*@__PURE__*/
   messageDesc(file_pendulum_v1_simulation, 12);
 
 /**
- * The public API the browser calls, served by the gateway.
- *
- * Commands return an empty response once they are validated and broadcast.
- * That means "accepted", not "applied by every server": the bus has no replies.
+ * An empty command response means "accepted", not "applied by every server": the bus has no replies.
  * The real effect shows up on the WatchPendulums stream.
  *
  * @generated from service pendulum.v1.SimulationService

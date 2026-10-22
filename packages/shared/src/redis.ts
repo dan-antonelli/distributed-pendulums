@@ -7,17 +7,16 @@ const NEXT_ID_KEY = "pendulums:next-id";
 
 const logError = (error: unknown) => console.error("redis:", error instanceof Error ? error.message : error);
 
-// The production Bus: Redis pub/sub carrying binary protobuf.
-// Node-only, so it lives behind its own import path ("@pendulums/shared/redis") and never reaches the browser bundle.
+// Node-only, so it lives behind its own import path and never reaches the browser bundle.
 export async function connectRedis(url: string) {
-  // While disconnected, fail publishes at once instead of queueing them. A queue would replay seconds of
-  // stale positions on reconnect, and the gateway couldn't tell the user that a command didn't go out.
+  // Fail publishes at once while disconnected: a queue would replay stale positions on reconnect,
+  // and the gateway couldn't tell the user that a command didn't go out.
   const publisher = createClient({ url, disableOfflineQueue: true });
   publisher.on("error", logError);
   await publisher.connect();
 
-  // A Redis connection in subscribe mode can't send other commands, so subscriptions get their own.
-  // This one keeps the offline queue, so a subscribe issued during a disconnect still happens.
+  // A connection in subscribe mode can't send other commands. This one keeps the offline queue,
+  // so a subscribe issued during a disconnect still happens.
   const subscriber = createClient({ url });
   subscriber.on("error", logError);
   await subscriber.connect();
@@ -26,7 +25,6 @@ export async function connectRedis(url: string) {
     try {
       return fromBinary(BusMessageSchema, raw);
     } catch (error) {
-      // Not ours, or a version we can't read. Log and drop it rather than crash.
       logError(error);
       return undefined;
     }
@@ -57,7 +55,7 @@ export async function connectRedis(url: string) {
 
   return {
     bus,
-    // Atomic: Redis runs commands one at a time, so two servers starting together never get the same id.
+    // INCR is atomic, so two servers starting together never get the same id.
     claimId: () => publisher.incr(NEXT_ID_KEY),
     async close() {
       await subscriber.close();
