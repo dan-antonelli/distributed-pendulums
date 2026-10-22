@@ -64,6 +64,20 @@ describe("ConfigTable", () => {
     expect(length(2)).toHaveValue(9);
   });
 
+  test("a cleared field disables Apply, shows an error and sends nothing", async () => {
+    const user = userEvent.setup();
+    const fake = createFakeService();
+    renderWithTransport(<Panel pendulums={[view(1)]} />, fake);
+
+    await user.clear(screen.getByRole("spinbutton", { name: "Anchor position in meters, pendulum 1" }));
+
+    expect(apply(1)).toBeDisabled();
+    expect(screen.getByRole("alert")).toHaveTextContent("Pendulum 1: Anchor needs a number");
+    expect(start()).toBeDisabled();
+    await user.click(apply(1));
+    expect(fake.calls).toEqual([]);
+  });
+
   test("rows are locked while running, and so is Reset to defaults", () => {
     renderWithTransport(<Panel pendulums={[view(1, { phase: PendulumPhase.RUNNING })]} />, createFakeService());
     expect(length(1)).toBeDisabled();

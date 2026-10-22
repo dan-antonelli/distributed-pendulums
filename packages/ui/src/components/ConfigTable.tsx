@@ -15,6 +15,13 @@ const phaseLabel: Record<PendulumPhase, string> = {
   [PendulumPhase.WAITING]: "Waiting",
 };
 
+const fieldNames: [keyof Draft, string][] = [
+  ["anchor", "Anchor"],
+  ["length", "Length"],
+  ["mass", "Mass"],
+  ["angle", "Start angle"],
+];
+
 function Row({ pendulum, editable, anchorRange, drafts }: { pendulum: PendulumView; editable: boolean; anchorRange: Range; drafts: Drafts }) {
   const client = useClient();
   const saved = draftOf(pendulum);
@@ -69,6 +76,8 @@ function Row({ pendulum, editable, anchorRange, drafts }: { pendulum: PendulumVi
   }
 
   const changed = draft !== undefined && JSON.stringify(draft) !== JSON.stringify(saved);
+  const blank = draft && fieldNames.find(([key]) => draft[key].trim() === "" || !Number.isFinite(Number(draft[key])));
+  const shownError = blank ? `${blank[1]} needs a number` : error;
 
   return (
     <>
@@ -84,7 +93,7 @@ function Row({ pendulum, editable, anchorRange, drafts }: { pendulum: PendulumVi
         <td className="col-edge">
           {/* Both always rendered, so the cell never changes shape. */}
           <div className="row-actions">
-            <button type="button" aria-label={`Apply, pendulum ${pendulum.id}`} disabled={!editable || !changed} onClick={apply}>
+            <button type="button" aria-label={`Apply, pendulum ${pendulum.id}`} disabled={!editable || !changed || blank !== undefined} onClick={apply}>
               Apply
             </button>
             <button
@@ -99,10 +108,10 @@ function Row({ pendulum, editable, anchorRange, drafts }: { pendulum: PendulumVi
           </div>
         </td>
       </tr>
-      {error && (
+      {shownError && (
         <tr className="row-error">
           <td colSpan={7} role="alert">
-            Pendulum {pendulum.id}: {error}
+            Pendulum {pendulum.id}: {shownError}
           </td>
         </tr>
       )}
